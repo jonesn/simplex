@@ -11,3 +11,4 @@ pom.xml.asc
 .hgignore
 .hg/
 nz.co.arachnid.simplex.iml
+.idea
