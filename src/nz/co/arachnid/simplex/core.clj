@@ -252,19 +252,26 @@
 
 (defn setup-next-iteration
   [tableaux]
-  (let [key-element             (:key-element tableaux)
-        key-column-index        (:key-column-index tableaux)
-        key-row-index           (:key-row-index tableaux)
-        tableaux-rows           (:tableaux-rows tableaux)
-        entering-variable       (:entering-variable tableaux)
-        coeffecient-row         (:objective-coeffecient-row tableaux)
-        entering-coeffecient    (nth coeffecient-row key-column-index)
-        entering-row-to-update  (nth tableaux-rows key-row-index)
-        updated-entering-row-s1 (merge entering-row-to-update
-                                       {:active-variable entering-variable
-                                        :cbi             entering-coeffecient})
-        updated-entering-row-s2 (calculate-entering-row updated-entering-row-s1 key-element)
-        updated-tableaux-rows   (assoc tableaux-rows key-row-index updated-entering-row-s2)]))
+  (let [key-element                (:key-element tableaux)
+        key-column-index           (:key-column-index tableaux)
+        key-row-index              (:key-row-index tableaux)
+        tableaux-rows              (:tableaux-rows tableaux)
+        entering-variable          (:entering-variable tableaux)
+        coeffecient-row            (:objective-coeffecient-row tableaux)
+        entering-coeffecient       (nth coeffecient-row key-column-index)
+        entering-row-to-update     (nth tableaux-rows key-row-index)
+        updated-entering-row-step1 (merge entering-row-to-update
+                                          {:active-variable entering-variable
+                                           :cbi             entering-coeffecient})
+        updated-entering-row-step2 (calculate-entering-row updated-entering-row-step1 key-element)
+        updated-tableaux-rows-with-entering-row (assoc tableaux-rows key-row-index updated-entering-row-step2)
+        updated-all-rows           (calculate-non-entering-rows
+                                     updated-tableaux-rows-with-entering-row
+                                     entering-row-to-update
+                                     key-row-index
+                                     key-column-index
+                                     key-element)]
+       (assoc tableaux :tableaux-rows updated-all-rows)))
 
 
 ;coeffecient-row       (:objective-coeffecient-row tableaux)
