@@ -11,32 +11,32 @@
    :iteration                 0
    :basic-variable-row        [:x1 :x2 :s1 :s2]
    :objective-coeffecient-row [12 16 0 0] ;; cj from video
-   :tableaux-rows             [{:cbi                     0
-                                :active-variable         :s1
-                                :constraint-coefficients [10 20 1 0]
-                                :solution                120
-                                :ratio                   0}
-                               {:cbi                     0
-                                :active-variable         :s2
-                                :constraint-coefficients [8 8 0 1]
-                                :solution                80
-                                :ratio                   0}]})
+   :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [10 20 1 0] :solution 120 :ratio 0}
+                               {:cbi 0 :active-variable :s2 :constraint-coefficients [8 8 0 1]   :solution  80 :ratio 0}]})
 
 (def iteration-0-post
   {:problem-type              :max
    :iteration                 0
    :basic-variable-row        [:x1 :x2 :s1 :s2]
    :objective-coeffecient-row [12 16 0 0]
-   :tableaux-rows             [{:cbi 0
-                                :active-variable :s1
-                                :constraint-coefficients [10 20 1 0],
-                                :solution 120,
-                                :ratio 6}
-                               {:cbi 0
-                                :active-variable :s2
-                                :constraint-coefficients [8 8 0 1],
-                                :solution 80,
-                                :ratio 10}]
+   :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [10 20 1 0], :solution 120, :ratio 6}
+                               {:cbi 0 :active-variable :s2 :constraint-coefficients [8 8 0 1],   :solution 80,  :ratio 10}]
+   :Cj-Zj                     [12 16 0 0]
+   :Zj-row                    [0 0 0 0]
+   :key-column-index          1
+   :key-element               20
+   :key-ratio-index           0
+   :key-row-index             0
+   :entering-variable         :x2
+   :exiting-variable          :s1})
+
+(def iteration-1-pre
+  {:problem-type              :max
+   :iteration                 1
+   :basic-variable-row        [:x1 :x2 :s1 :s2]
+   :objective-coeffecient-row [12 16 0 0]
+   :tableaux-rows             [{:cbi 16, :active-variable :x2, :constraint-coefficients [1/2 1 1/20 0], :solution  6, :ratio 1}
+                               {:cbi  0, :active-variable :s2, :constraint-coefficients [  4 0 -2/5 1], :solution 32, :ratio 10}]
    :Cj-Zj                     [12 16 0 0]
    :Zj-row                    [0 0 0 0]
    :key-column-index          1
@@ -104,6 +104,18 @@
                (:exiting-variable result)  => :s1
                (:entering-variable result) => :x2
                result                      => iteration-0-post)))
+
+(facts "Setup Next Iteration"
+       (fact "Given iteration 0 that has calculated entering and exiting variables then we can setup the next iteration."
+             (let [undertest (comp setup-next-iteration
+                                   calculate-entering-and-exiting-variables
+                                   calculate-key-row-and-value
+                                   calculate-solution-to-key-val-ratio
+                                   calculate-key-column
+                                   calculate-cj-zj-row
+                                   calculate-zj-row)
+                      result (undertest iteration-0-pre)]
+               result => iteration-1-pre)))
 
 ;; ======================
 ;; Min Problem Iterations

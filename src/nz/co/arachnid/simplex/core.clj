@@ -158,11 +158,11 @@
   "- For max problems all Cj-Zj <= 0
    - For min problems all Cj-Zj >= 0"
   [tableaux]
-  (let [cj-zj-row     (:Cj-Zj tableaux)
-        problem-type  (:problem-type tableaux)]
-    (or
-      (and (= problem-type :min) (every? (fn [x] (>= x 0)) cj-zj-row))
-      (and (= problem-type :max) (every? (fn [x] (<= x 0)) cj-zj-row)))))
+  (true?
+    (when-let [cj-zj-row (:Cj-Zj tableaux)]
+      (or
+        (and (= (:problem-type tableaux) :min) (every? (fn [x] (>= x 0)) cj-zj-row))
+        (and (= (:problem-type tableaux) :max) (every? (fn [x] (<= x 0)) cj-zj-row))))))
 
 
 (defn- find-key-value
@@ -251,6 +251,11 @@
                      :exiting-variable  exiting-variable})))
 
 (defn setup-next-iteration
+  "This function will setup the next iteration of the Tableaux. It is the most computationally
+   expensive step as it updates all the rows in the tableaux with new values based on the:
+    - key-row
+    - key-column
+    - key-element"
   [tableaux]
   (let [key-element                (:key-element tableaux)
         key-column-index           (:key-column-index tableaux)
@@ -271,17 +276,29 @@
                                      key-row-index
                                      key-column-index
                                      key-element)]
-       (assoc tableaux :tableaux-rows updated-all-rows)))
+       (merge tableaux {:tableaux-rows updated-all-rows
+                        :iteration     (inc (:iteration tableaux))})))
 
-
-;coeffecient-row       (:objective-coeffecient-row tableaux)
-;entering-coeffecient  (nth coeffecient-row key-column-index)
-;tableaux-rows         (:tableaux-rows tableaux)
-;row-to-update         (nth tableaux-rows key-row-index)
-;updated-row           (merge row-to-update
-;                             {:active-variable entering-variable
-;                              :cbi             entering-coeffecient})
-;updated-tableaux-rows (assoc tableaux-rows key-row-index updated-row)
+(defn simplex
+  [tableaux]
+  (let [optimality-fn     (fn [t]
+                            (->> t
+                                 calculate-zj-row
+                                 calculate-cj-zj-row))
+        full-iteration-fn (fn [t] (->> t
+                                       optimality-fn
+                                       calculate-key-column
+                                       calculate-solution-to-key-val-ratio
+                                       calculate-key-row-and-value
+                                       calculate-entering-and-exiting-variables
+                                       setup-next-iteration))]
+   (if (optimal-solution? (optimality-fn tableaux))
+     ;; then
+     tableaux
+     ;; else
+     (do
+       (clojure.pprint/pprint tableaux)
+       (simplex (full-iteration-fn tableaux))))))
 
 ;; ======================================
 ;;        Comment Helper Functions
@@ -324,4 +341,6 @@
            1
            1
            20)
-         (calculate-non-entering-rows [8 8 0 1] [10 20 1 0] 0 1 20))
+         (calculate-non-entering-rows [8 8 0 1] [10 20 1 0] 0 1 20)
+         (simplex it0)
+         (optimal-solution? it0))
