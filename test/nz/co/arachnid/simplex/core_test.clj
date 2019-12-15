@@ -6,7 +6,22 @@
 ;; Max Problem Iterations
 ;; ======================
 
-(def iteration-0-pre
+;; Maximize z = 12x1 + 16x2
+;; ========================
+;;
+;; Subject to:
+;; ===========
+;; - 10x1 + 20x2 <= 120
+;; -  8x1 +  8x2 <= 80
+;; - x1 and x2 >= 0
+;;
+;; Slack Variable Form
+;; ===================
+;; - Max z: 12x1 + 16x2 + 0s1 + 0s2 (Objective Function)
+;; - 10x1 + 20x2 + s1 = 120         (Constraint 1)
+;; -  8x1 +  8x2 + s2 = 80          (Constraint 2)
+
+(def max-iteration-0-pre
   {:problem-type              :max
    :iteration                 0
    :basic-variable-row        [:x1 :x2 :s1 :s2]
@@ -14,7 +29,7 @@
    :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [10 20 1 0] :solution 120 :ratio 0}
                                {:cbi 0 :active-variable :s2 :constraint-coefficients [8 8 0 1]   :solution  80 :ratio 0}]})
 
-(def iteration-0-post
+(def max-iteration-0-post
   {:problem-type              :max
    :iteration                 0
    :basic-variable-row        [:x1 :x2 :s1 :s2]
@@ -30,7 +45,7 @@
    :entering-variable         :x2
    :exiting-variable          :s1})
 
-(def iteration-1-pre
+(def max-iteration-1-pre
   {:problem-type              :max
    :iteration                 1
    :basic-variable-row        [:x1 :x2 :s1 :s2]
@@ -46,67 +61,105 @@
    :entering-variable         :x2
    :exiting-variable          :s1})
 
+(def max-solution
+  {:problem-type :max,
+   :iteration 2,
+   :basic-variable-row [:x1 :x2 :s1 :s2],
+   :objective-coeffecient-row [12 16 0 0],
+   :tableaux-rows [{:cbi 16, :active-variable :x2, :constraint-coefficients [0N 1N 1/10 -1/8], :solution 2N, :ratio 12N}
+                   {:cbi 12, :active-variable :x1, :constraint-coefficients [1 0 -1/10 1/4], :solution 8, :ratio 1}],
+   :Zj-row [8N 16 4/5 0]
+   :Cj-Zj [4N 0 -4/5 0],
+   :key-column-index 0,
+   :key-element 4,
+   :key-ratio-index 1,
+   :key-row-index 1,
+   :entering-variable :x1,
+   :exiting-variable :s2})
+
+;; ======================
+;; Min Problem Iterations
+;; ======================
+
+(def min-iteration-0-pre
+  {:problem-type              :min
+   :iteration                 0
+   :basic-variable-row        [:x1 :y1 :s1 :s2 :s3]
+   :objective-coeffecient-row [0.2 2 0 0 0] ;; cj from video
+   :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [ 80  640 1 0 0] :solution  480 :ratio 0}
+                               {:cbi 0 :active-variable :s2 :constraint-coefficients [  6   36 0 1 0] :solution   30 :ratio 0}
+                               {:cbi 0 :active-variable :s3 :constraint-coefficients [600 1400 0 0 1] :solution 1600 :ratio 0}]})
+
+
 (facts "Calculate ZJ Row Cases"
-       (fact "Given Iteration 0 we will correctly calculate a zero Zj row"
-             (:Zj-row (calculate-zj-row iteration-0-pre)) => [0 0 0 0]))
+       (fact "Max: Given Iteration 0 we will correctly calculate a zero Zj row"
+             (:Zj-row (calculate-zj-row max-iteration-0-pre)) => [0 0 0 0])
+       (fact "Min: Given Iteration 0 we will correctly calculate a zero Zj row"
+             (:Zj-row (calculate-zj-row min-iteration-0-pre)) => [0 0 0 0 0]))
 
 (facts "Calculate Cj - Zj"
-       (fact "Given iteration 0 we will correctly calculate the Cj-Zj row"
-             (let [undertest (comp calculate-cj-zj-row calculate-zj-row)]
-               (:Cj-Zj (undertest iteration-0-pre)) => [12 16 0 0])))
+       (let [undertest (comp calculate-cj-zj-row calculate-zj-row)]
+         (fact "Max: Given iteration 0 we will correctly calculate the Cj-Zj row"
+               (:Cj-Zj (undertest max-iteration-0-pre)) => [12 16 0 0])
+         (fact "Min: Given iteration 0 we will correctly calculate the Cj-Zj row"
+               (:Cj-Zj (undertest min-iteration-0-pre)) => [0.2 2 0 0 0])))
 
 (facts "Check Optimality"
-       (fact "Given iteration 0 we will deduce that the max optimum has not been meet"
-             (let [undertest (comp optimal-solution? calculate-cj-zj-row calculate-zj-row)]
-               (undertest iteration-0-pre) => false)))
+       (let [undertest (comp optimal-solution? calculate-cj-zj-row calculate-zj-row)]
+         (fact "Max: Given iteration 0 we will deduce that the max optimum has not been meet"
+                 (undertest max-iteration-0-pre) => false)))
+
+; NJ_TODO Re-add back in.
+;(fact "Min: Given iteration 0 we will deduce that the max optimum has not been meet"
+;      (undertest min-iteration-0-pre) => false)
 
 (facts "Calculate Key Column"
-       (fact "Given iteration 0 we can correctly select the key column"
+       (fact "Max: Given iteration 0 we can correctly select the key column"
              (let [undertest (comp calculate-key-column calculate-cj-zj-row calculate-zj-row)
-                   result    (undertest iteration-0-pre)]
+                   result    (undertest max-iteration-0-pre)]
                (:key-column-index result) => 1)))
 
 (facts "Calculate Key Column Ratios"
-       (fact "Given iteration 0 we can correctly calculate the s / k ratios"
+       (fact "Max: Given iteration 0 we can correctly calculate the s / k ratios"
              (let [undertest (comp calculate-solution-to-key-val-ratio
                                    calculate-key-column
                                    calculate-cj-zj-row
                                    calculate-zj-row)
-                   result    (undertest iteration-0-pre)]
+                   result    (undertest max-iteration-0-pre)]
                (:key-ratio-index result) => 0
                (:tableaux-rows result)   => [{:cbi 0, :active-variable :s1 :constraint-coefficients [10 20 1 0], :solution 120, :ratio  6}
                                              {:cbi 0, :active-variable :s2 :constraint-coefficients [8 8 0 1],   :solution  80, :ratio 10}])))
 
 
 (facts "Calculate Key Row and Key Value"
-       (fact "Given iteration 0 we can correctly calculate the key row and key value"
+       (fact "Max: Given iteration 0 we can correctly calculate the key row and key value"
              (let [undertest (comp calculate-key-row-and-value
                                    calculate-solution-to-key-val-ratio
                                    calculate-key-column
                                    calculate-cj-zj-row
                                    calculate-zj-row)
-                   result    (undertest iteration-0-pre)]
+                   result    (undertest max-iteration-0-pre)]
                (:key-row-index result) => 0
                (:key-element   result) => 20)))
 
 
 (facts "Calculate Entering and Exiting Variables"
-       (fact "Given iteration 0 with the key rows and columns calculated then we can calculate the exiting value."
+       (fact "Max: Given iteration 0 with the key rows and columns calculated then we can calculate the exiting value."
              (let [undertest (comp calculate-entering-and-exiting-variables
                                    calculate-key-row-and-value
                                    calculate-solution-to-key-val-ratio
                                    calculate-key-column
                                    calculate-cj-zj-row
                                    calculate-zj-row)
-                   result    (undertest iteration-0-pre)]
+                   result    (undertest max-iteration-0-pre)]
                (:tableaux-rows result)     => [{:cbi 0, :active-variable :s1 :constraint-coefficients [10 20 1 0], :solution 120, :ratio  6}
                                                {:cbi 0, :active-variable :s2 :constraint-coefficients [8 8 0 1],   :solution  80, :ratio 10}]
                (:exiting-variable result)  => :s1
                (:entering-variable result) => :x2
-               result                      => iteration-0-post)))
+               result                      => max-iteration-0-post)))
 
 (facts "Setup Next Iteration"
-       (fact "Given iteration 0 that has calculated entering and exiting variables then we can setup the next iteration."
+       (fact "Max: Given iteration 0 that has calculated entering and exiting variables then we can setup the next iteration."
              (let [undertest (comp setup-next-iteration
                                    calculate-entering-and-exiting-variables
                                    calculate-key-row-and-value
@@ -114,12 +167,16 @@
                                    calculate-key-column
                                    calculate-cj-zj-row
                                    calculate-zj-row)
-                      result (undertest iteration-0-pre)]
-               result => iteration-1-pre)))
+                      result (undertest max-iteration-0-pre)]
+               result => max-iteration-1-pre)))
 
-;; ======================
-;; Min Problem Iterations
-;; ======================
+(facts "Full Simplex Check"
+       (fact "Max: Check that we can calculate a correct solution given iteration 0"
+             (simplex max-iteration-0-pre) => max-solution))
+
+(facts "Tableaux Solution To String"
+       (fact "Max: Full Simplex Solution can generate correct short form String"
+             (tableaux-solution-to-string (simplex max-iteration-0-pre)) => "x1 = 8, x2 = 2"))
 
 ;; ======================
 ;;   Helper Function Tests

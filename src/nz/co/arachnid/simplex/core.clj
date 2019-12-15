@@ -1,5 +1,7 @@
 (ns nz.co.arachnid.simplex.core
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.spec.alpha :as s]
+            [clojure.pprint     :as pp]
+            [clojure.string     :as str]))
 
 ;; Referencing Video
 ;; https://www.youtube.com/watch?v=M8POtpPtQZc&list=PLhL0OLgFT2BSx6XvhpWmlzOO2kOR82dQK&index=2&t=0s
@@ -108,17 +110,17 @@
 
 (defn calculate-non-entering-rows
   [tableaux-rows previous-iteration-key-row key-row-index key-column-index key-element]
-  (map-indexed
-    (fn [current-row-index row]
-      (calculate-non-entering-row
-        row
-        previous-iteration-key-row
-        key-row-index
-        key-column-index
-        current-row-index
-        key-element))
-    tableaux-rows))
-
+  (vec
+    (map-indexed
+      (fn [current-row-index row]
+        (calculate-non-entering-row
+          row
+          previous-iteration-key-row
+          key-row-index
+          key-column-index
+          current-row-index
+          key-element))
+      tableaux-rows)))
 
 ;;  Main Functions
 ;; ================
@@ -133,10 +135,10 @@
    - :Zj-row"
   [tableaux]
   (let [t-rows           (:tableaux-rows tableaux)
-        cbi*constraints  (map
+        cbi*constraints  (mapv
                            (fn [row] (mult-coeffecients-by-scalar (:cbi row) (:constraint-coefficients row)))
                            t-rows)
-        zj               (apply #(mapv + %1 %2) cbi*constraints)]
+        zj               (apply mapv + cbi*constraints)]
     (assoc tableaux :Zj-row zj)))
 
 
@@ -297,8 +299,19 @@
      tableaux
      ;; else
      (do
-       (clojure.pprint/pprint tableaux)
+       (pp/pprint tableaux)
        (simplex (full-iteration-fn tableaux))))))
+
+(defn tableaux-solution-to-string
+  [tableaux]
+  (let [tableaux-rows (:tableaux-rows tableaux)
+        var-to-sol    (map
+                       (fn [row] (vals (select-keys row [:active-variable :solution])))
+                       tableaux-rows)]
+    (str/join ", " (sort
+                     (map
+                       (fn [pair] (str (name (first pair)) " = " (second pair)))
+                       var-to-sol)))))
 
 ;; ======================================
 ;;        Comment Helper Functions
@@ -341,6 +354,20 @@
            1
            1
            20)
+         (defn positive-even-numbers
+           ([] (positive-even-numbers 2))
+           ([n] (lazy-seq (cons n (positive-even-numbers (+ n 2))))))
          (calculate-non-entering-rows [8 8 0 1] [10 20 1 0] 0 1 20)
-         (simplex it0)
-         (optimal-solution? it0))
+         (def sol (simplex it0))
+         (optimal-solution? it0)
+         (def min-iteration-0-pre
+           {:problem-type              :min
+            :iteration                 0
+            :basic-variable-row        [:x1 :y1 :s1 :s2 :s3]
+            :objective-coeffecient-row [-0.2 -2 0 0 0] ;; cj from video
+            :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [ 80  640 1 0 0] :solution  480 :ratio 0}
+                                        {:cbi 0 :active-variable :s2 :constraint-coefficients [  6   36 0 1 0] :solution   30 :ratio 0}
+                                        {:cbi 0 :active-variable :s3 :constraint-coefficients [600 1400 0 0 1] :solution 1600 :ratio 0}]})
+         (simplex min-iteration-0-pre)
+         (apply #(mapv + %1 %2) [[1 2] [3 4]])
+         (apply mapv + [[1 2 5] [3 4 6] [5 6 7]]))
