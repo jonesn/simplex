@@ -46,6 +46,37 @@ printfn "%A" newList
 
 ## Taking it Further Function Application
 
+What if we were to have 'n' collections how would you go about performing this sum. 
+
+### Java
+
+```java
+public class App2 {
+    public static void main(String[] args) {
+        List<Integer> listA = List.of(1,2,3);
+        List<Integer> listB = List.of(4,5,6);
+        List<Integer> listC = List.of(2,3,4);
+        List<Integer> listD = List.of(400, 600, 700);
+        List<Integer> listE = List.of(800, 900, 765);
+
+        List<List<Integer>> toProcess = List.of(listA, listB, listC, listD, listE);
+        List<Integer> result = new ArrayList<>(3);
+
+        for (int index = 0; index < listA.size(); index ++) {
+            Integer columnSum = 0;
+            for (List<Integer> list : toProcess) {
+                // The key bit is here the rest is ceremony.
+                columnSum += list.get(index);
+            }
+            result.add(columnSum);
+        }
+        System.out.println(result);
+    }
+}
+```
+
+### Clojure
+
 ```clj
 (apply mapv + [[1 2 3] [4 5 6] [2 3 4]])
 ```
@@ -56,18 +87,40 @@ printfn "%A" newList
 (apply mapv + [[1 2 3] [4 5 6] [2 3 4] [400 600 700] [800 900 765]])
 ```
 
-## To Chat About
+[1207 1510 1478]
+
+---
+
+## Map Indexed
+
+In functional languages some times you still need an index to make decisions on as you iterate.
+
+This is a contrived example of how this index can be supplied. In the simplex example I'll show more
+useful scenarios.
+
+```clj
+(map-indexed
+           (fn [index element]
+             (* index element)) [1 2 3 4 5])
+```
+
+=> (0 2 6 12 20)
 
 # To Cover
 
  - map-indexed
- - apply
- - comp
  - zipmap
  - walk
- - lazyseq
  - juxt
- - memoize
+ - memoize - trading space for time
+
+ - apply
+ - comp
+ - lazyseq
+ - referential transparency
+ - recursion (Tail Optimized)
+
+ - Javas focus on single collections. Suppliers and Consumers.
 
 https://theburningmonk.com/2016/12/depth-first-tree-traversal-in-f/
 

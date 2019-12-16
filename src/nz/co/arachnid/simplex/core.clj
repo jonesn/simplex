@@ -370,4 +370,7 @@
                                         {:cbi 0 :active-variable :s3 :constraint-coefficients [600 1400 0 0 1] :solution 1600 :ratio 0}]})
          (simplex min-iteration-0-pre)
          (apply #(mapv + %1 %2) [[1 2] [3 4]])
-         (apply mapv + [[1 2 5] [3 4 6] [5 6 7]]))
+         (apply mapv + [[1 2 5] [3 4 6] [5 6 7]])
+         (map-indexed
+           (fn [index element]
+             (* index element)) [1 2 3 4 5]))
