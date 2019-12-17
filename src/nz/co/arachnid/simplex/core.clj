@@ -1,7 +1,8 @@
 (ns nz.co.arachnid.simplex.core
   (:require [clojure.spec.alpha :as s]
             [clojure.pprint     :as pp]
-            [clojure.string     :as str]))
+            [clojure.string     :as str]
+            [nz.co.arachnid.simplex.tableaux-printer :refer :all]))
 
 ;; Referencing Video
 ;; https://www.youtube.com/watch?v=M8POtpPtQZc&list=PLhL0OLgFT2BSx6XvhpWmlzOO2kOR82dQK&index=2&t=0s
@@ -59,6 +60,17 @@
 
 ;; Helper Functions Public
 ;; =======================
+
+(defn tableaux-solution-to-string
+  [tableaux]
+  (let [tableaux-rows (:tableaux-rows tableaux)
+        var-to-sol    (map
+                        (fn [row] (vals (select-keys row [:active-variable :solution])))
+                        tableaux-rows)]
+    (str/join ", " (sort
+                     (map
+                       (fn [pair] (str (name (first pair)) " = " (second pair)))
+                       var-to-sol)))))
 
 (defn calculate-entering-row
   [old-row key-element]
@@ -287,7 +299,7 @@
    ## Returns
    A vector containing each Tableaux iteration"
   ([tableaux]
-   (simplex tableaux []))
+   (simplex tableaux [tableaux]))
   ([tableaux iterations]
    (let [optimality-fn     (fn [t]
                              (->> t
@@ -307,17 +319,6 @@
        (let [next-iteration     (full-iteration-fn tableaux)
              updated-iterations (conj iterations next-iteration)]
          (simplex next-iteration updated-iterations))))))
-
-(defn tableaux-solution-to-string
-  [tableaux]
-  (let [tableaux-rows (:tableaux-rows tableaux)
-        var-to-sol    (map
-                       (fn [row] (vals (select-keys row [:active-variable :solution])))
-                       tableaux-rows)]
-    (str/join ", " (sort
-                     (map
-                       (fn [pair] (str (name (first pair)) " = " (second pair)))
-                       var-to-sol)))))
 
 ;; ======================================
 ;;        Comment Helper Functions
@@ -376,6 +377,7 @@
                                         {:cbi 0 :active-variable :s3 :constraint-coefficients [600 1400 0 0 1] :solution 1600 :ratio 0}]})
          (simplex it0)
          (last (simplex it0))
+         (print-results (simplex it0) "/tmp/simplex-output.html")
          (apply #(mapv + %1 %2) [[1 2] [3 4]])
          (apply mapv + [[1 2 5] [3 4 6] [5 6 7]])
          (map-indexed

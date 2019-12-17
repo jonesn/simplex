@@ -119,6 +119,8 @@ useful scenarios.
  - lazyseq
  - referential transparency
  - recursion (Tail Optimized)
+ - Work on collections
+ - Boundaries on Functions.
 
  - Javas focus on single collections. Suppliers and Consumers.
 
