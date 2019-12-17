@@ -255,9 +255,9 @@
 (defn setup-next-iteration
   "This function will setup the next iteration of the Tableaux. It is the most computationally
    expensive step as it updates all the rows in the tableaux with new values based on the:
-    - key-row
-    - key-column
-    - key-element"
+    - :key-row
+    - :key-column
+    - :key-element"
   [tableaux]
   (let [key-element                (:key-element tableaux)
         key-column-index           (:key-column-index tableaux)
@@ -282,25 +282,31 @@
                         :iteration     (inc (:iteration tableaux))})))
 
 (defn simplex
-  [tableaux]
-  (let [optimality-fn     (fn [t]
-                            (->> t
-                                 calculate-zj-row
-                                 calculate-cj-zj-row))
-        full-iteration-fn (fn [t] (->> t
-                                       optimality-fn
-                                       calculate-key-column
-                                       calculate-solution-to-key-val-ratio
-                                       calculate-key-row-and-value
-                                       calculate-entering-and-exiting-variables
-                                       setup-next-iteration))]
-   (if (optimal-solution? (optimality-fn tableaux))
-     ;; then
-     tableaux
-     ;; else
-     (do
-       (pp/pprint tableaux)
-       (simplex (full-iteration-fn tableaux))))))
+  "Recursive implementation that runs the full simplex algorithm for a valid initial Tableaux.
+   It will start by checking for optimality and if it is not meet will process another iteration.
+   ## Returns
+   A vector containing each Tableaux iteration"
+  ([tableaux]
+   (simplex tableaux []))
+  ([tableaux iterations]
+   (let [optimality-fn     (fn [t]
+                             (->> t
+                                  calculate-zj-row
+                                  calculate-cj-zj-row))
+         full-iteration-fn (fn [t] (->> t
+                                        optimality-fn
+                                        calculate-key-column
+                                        calculate-solution-to-key-val-ratio
+                                        calculate-key-row-and-value
+                                        calculate-entering-and-exiting-variables
+                                        setup-next-iteration))]
+     (if (optimal-solution? (optimality-fn tableaux))
+       ;; then
+       iterations
+       ;; else
+       (let [next-iteration     (full-iteration-fn tableaux)
+             updated-iterations (conj iterations next-iteration)]
+         (simplex next-iteration updated-iterations))))))
 
 (defn tableaux-solution-to-string
   [tableaux]
@@ -368,7 +374,8 @@
             :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [ 80  640 1 0 0] :solution  480 :ratio 0}
                                         {:cbi 0 :active-variable :s2 :constraint-coefficients [  6   36 0 1 0] :solution   30 :ratio 0}
                                         {:cbi 0 :active-variable :s3 :constraint-coefficients [600 1400 0 0 1] :solution 1600 :ratio 0}]})
-         (simplex min-iteration-0-pre)
+         (simplex it0)
+         (last (simplex it0))
          (apply #(mapv + %1 %2) [[1 2] [3 4]])
          (apply mapv + [[1 2 5] [3 4 6] [5 6 7]])
          (map-indexed

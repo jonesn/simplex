@@ -172,11 +172,11 @@
 
 (facts "Full Simplex Check"
        (fact "Max: Check that we can calculate a correct solution given iteration 0"
-             (simplex max-iteration-0-pre) => max-solution))
+             (last (simplex max-iteration-0-pre)) => max-solution))
 
 (facts "Tableaux Solution To String"
        (fact "Max: Full Simplex Solution can generate correct short form String"
-             (tableaux-solution-to-string (simplex max-iteration-0-pre)) => "x1 = 8, x2 = 2"))
+             (tableaux-solution-to-string (last (simplex max-iteration-0-pre))) => "x1 = 8, x2 = 2"))
 
 ;; ======================
 ;;   Helper Function Tests
