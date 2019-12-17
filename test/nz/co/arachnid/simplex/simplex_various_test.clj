@@ -36,4 +36,4 @@
 
 (facts "Drugs Machine Solution To String"
        (fact "Full Simplex Solution can generate correct short form String"
-             (tableaux-solution-to-string (simplex max-iteration-pre-drugs-machines)) => "x1 = 3, x2 = 2"))
+             (tableaux-solution-to-string (last (simplex max-iteration-pre-drugs-machines))) => "x1 = 3, x2 = 2"))
