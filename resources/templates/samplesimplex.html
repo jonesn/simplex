@@ -11,24 +11,51 @@
         <h2>Iteration: {{it.iteration}}</h2>
             <table class="table table-striped table-sm">
                 <tr>
-                    <td rowspan="2"><b>CBi</b></td><td><b>Cj</b></td>            <td>12</td><td>16</td><td>0</td><td>0</td><td rowspan="2"><b>Solution</b></td><td rowspan="2"><b>Ratio</b></td>
+                    <td rowspan="2"><b>CBi</b></td><td><b>Cj</b></td>
+                    {% for ce in it.objective-coeffecient-row %}
+                      <td>{{ce}}</td>
+                    {% endfor %}
+                    <td rowspan="2"><b>Solution</b></td><td rowspan="2"><b>Ratio</b></td>
                 </tr>
                 <tr>
-                    <td><b>Basic Variable</b></td><td>X1</td><td>X2</td><td>S1</td><td>S2</td>
+                    <td><b>Basic Variable</b></td>
+                    {% for bv in it.basic-variable-row %}
+                    <td>{{bv}}</td>
+                    {% endfor %}
+                </tr>
+                {% for tr in it.tableaux-rows %}
+                <tr>
+                    <td>{{tr.cbi}}</td>
+                    <td>{{tr.active-variable}}</td>
+                    {% for cc in tr.constraint-coefficients %}
+                      <td>{{cc}}</td>
+                    {% endfor %}
+                    <td>{{tr.solution}}</td>
+                    <td>{{tr.ratio}}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="2"><b>Zj</b></td>
+                    {% for zj in it.Zj-row %}
+                      <td>{{zj}}</td>
+                    {% endfor %}
                 </tr>
                 <tr>
-                    <td>0</td><td>S1</td><td>10</td><td>20</td><td>1</td><td>0</td><td>120</td>
-                </tr>
-                <tr>
-                    <td>0</td><td>S2</td><td>8</td><td>8</td><td>0</td><td>1</td><td>80</td>
-                </tr>
-                <tr>
-                    <td colspan="2"><b>Zj</b></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
-                </tr>
-                <tr>
-                    <td colspan="2"><b>Cj - Zj</b></td><td>12</td><td>16</td><td>0</td><td>0</td><td>0</td>
+                    <td colspan="2"><b>Cj - Zj</b></td>
+                    {% for cj in it.Cj-Zj %}
+                      <td>{{cj}}</td>
+                    {% endfor %}
                 </tr>
             </table>
+        <h4>Key Data</h4>
+        <table class="table table-striped table-sm">
+            <tr><td><b>Key Column Index</b></td><td>{{it.key-column-index}}</td></tr>
+            <tr><td><b>Key Element</b></td><td>{{it.key-element}}</td></tr>
+            <tr><td><b>Key Ratio Index</b></td><td>{{it.key-ratio-index}}</td></tr>
+            <tr><td><b>Key Row Index</b></td><td>{{it.key-row-index}}</td></tr>
+            <tr><td><b>Entering Variable</b></td><td>{{it.entering-variable}}</td></tr>
+            <tr><td><b>Exiting Variable</b></td><td>{{it.exiting-variable}}</td></tr>
+        </table>
         <hr/>
         {% endfor %}
     </div>

@@ -75,6 +75,8 @@ public class App2 {
 }
 ```
 
+[1207, 1510, 1478]
+
 ### Clojure
 
 ```clj
@@ -105,6 +107,41 @@ useful scenarios.
 ```
 
 => (0 2 6 12 20)
+
+## Zip Map
+
+Useful for dynamically generating maps
+
+```clj
+(zipmap [:a :b :c] [1 2 3])
+=> {:a 1, :b 2, :c 3}
+```
+
+```clj
+(require '[clojure.java.io :as io]) 
+(require '[clojure.string :as s])
+
+(def file-content
+"TITLE,FIRST,LAST,NUMBER,STREET,CITY,POST,JOINED 
+Mrs,Mary,Black,20,Hillbank St,Kelso,TD5 7JW,01/05/2012 12:51
+Miss,Chris,Bowie,44,Hall Rd,Sheffield,S5 7PW,01/05/2012 17:02 
+Mr,John,Burton,41,Warren Rd,Yarmouth,NR31 9AB,01/05/2012 17:08")
+
+(defn split [line]
+  (s/split line #","))
+
+(defn transform [data]
+(let [lines (line-seq data)
+      headers (split (first lines))]
+(eduction 
+  (map split) 
+  (map (partial zipmap headers))
+  (rest lines)))
+
+(with-open [data (io/reader (char-array file-content))]
+  (doall (transform data)))
+
+```
 
 # To Cover
 
