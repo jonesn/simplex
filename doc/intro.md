@@ -428,8 +428,8 @@ A company produces drugs A and B using machines M 1 and M 2.
 - 9 hours of processing on M1 and 8 hours on M2 are available each day
 - Each ton of drug produced (of either type) yields £1 million profit
 
-x 1 = number of tons of A produced
-x 2 = number of tons of B produced
+x1 = number of tons of A produced
+x2 = number of tons of B produced
 
 Maximise:
 x1 + x2 (profit in £ million)
