@@ -363,6 +363,8 @@ juxt takes an argument list of functions and returns a new "juxtaposing" functio
 
 (defn up    [[x y]] [x (dec y)])
 (defn down  [[x y]] [x (inc y)])
+(defn left  [[x y]] [(dec x) y])
+(defn right [[x y]] [(inc x) y])
 
 (defn valid? [[x y]]
   (and (dim x) (dim y)))
