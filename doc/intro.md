@@ -416,7 +416,7 @@ trading space for time
 
 ## Simplex
 
-![Optimization](optimization.png)
+![Optimization](optimization_drug_companies.png)
 
 ```
 Max Simple 2 Variable - Drugs and Machines
