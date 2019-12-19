@@ -35,3 +35,46 @@
                 (* 2 x)
                 x))
             mid-tree)
+
+((juxt first second last) (range 10))
+
+
+;; ============
+;; Levenshtein
+;; ============
+
+(defn levenshtein* [[c1 & rest1 :as str1]
+                    [c2 & rest2 :as str2]]
+  (let [len1 (count str1)
+        len2 (count str2)]
+    (cond (zero? len1) len2
+          (zero? len2) len1
+          :else
+          (min
+            (inc (levenshtein* rest1 str2))
+            (inc (levenshtein* str1 rest2))
+            (+ (if (= c1 c2) 0 1) (levenshtein* rest1 rest2))))))
+
+(def levenshtein (memoize levenshtein*))
+
+(defn to-words [txt init]
+  (->> txt
+       slurp
+       clojure.string/split-lines
+       (filter #(.startsWith % init))
+       (remove #(> (count %) 8))
+       doall))
+
+(defn best [misp dict]
+  (->>
+    dict
+    (map #(-> [% (levenshtein misp %)]))
+    (sort-by last)
+    (take 3)))
+
+(defn dict [init]
+  (to-words "/usr/share/dict/words" init))
+
+(def dict-ac (dict "ac"))
+
+(time (best "achive" dict-ac))

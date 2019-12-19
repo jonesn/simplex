@@ -159,6 +159,8 @@ public class App2 {
 
 [1207 1510 1478]
 
+#### An aside on apply
+
 ```
 Clojure is a dialect of Lisp and Lisp is an old language (the original paper "Recursive Functions of
 Symbolic Expressions and Their Computation by Machine" is dated 1960, but research in the direction of
@@ -197,7 +199,7 @@ In functional languages some times you still need an index to make decisions on 
 This is a contrived example of how this index can be supplied. In the simplex example I'll show more
 useful scenarios.
 
-```clj
+```clojure
 (map-indexed
            (fn [index element]
              (* index element)) [1 2 3 4 5])
@@ -211,12 +213,12 @@ useful scenarios.
 
 Useful for dynamically generating maps
 
-```clj
+```clojure
 (zipmap [:a :b :c] [1 2 3])
 => {:a 1, :b 2, :c 3}
 ```
 
-```clj
+```clojure
 (require '[clojure.java.io :as io]) 
 (require '[clojure.string :as s])
 
@@ -230,12 +232,12 @@ Mr,John,Burton,41,Warren Rd,Yarmouth,NR31 9AB,01/05/2012 17:08")
   (s/split line #","))
 
 (defn transform [data]
-(let [lines (line-seq data)
-      headers (split (first lines))]
-  (eduction 
-    (map split) 
-    (map (partial zipmap headers))
-    (rest lines)))
+   (let [lines (line-seq data)
+         headers (split (first lines))]
+      (eduction 
+        (map split) 
+        (map (partial zipmap headers))
+        (rest lines)))
 
 (with-open [data (io/reader (char-array file-content))]
   (doall (transform data)))
@@ -250,11 +252,14 @@ Mr,John,Burton,41,Warren Rd,Yarmouth,NR31 9AB,01/05/2012 17:08")
 ## Walk
 
  - Used to traverse nested structures like trees.
+
+### Clojure
  
 ```clojure
 (def wee-tree [[1 2 3]
                [4 5 6]])
 
+;; Depth First Post
 (w/postwalk #(do (println "visiting:" %) %) wee-tree)
 
 visiting: 1
@@ -267,6 +272,7 @@ visiting: 6
 visiting: [4 5 6]
 visiting: [[1 2 3] [4 5 6]]
 
+;; Depth First Pre
 (w/prewalk  #(do (println "visiting:" %) %) wee-tree)
 
 visiting: [[1 2 3] [4 5 6]]
@@ -278,12 +284,6 @@ visiting: [4 5 6]
 visiting: 4
 visiting: 5
 visiting: 6
-
-(w/postwalk (fn [x]
-              (if (number? x)
-                (* 2 x)
-                x))
-            wee-tree)
 
 (def mid-tree [[1 2 3
                   [5 6 7]]
@@ -301,23 +301,140 @@ visiting: 6
     [20 26 28]]]
 ``` 
 
-# To Cover
+### FSharp
 
- - map-indexed
- - zipmap
- - walk
+Lovely Types
 
- - juxt
- - memoize - trading space for time
+```fsharp
+type Tree<'a> = 
+  | Empty
+  | Node of value: 'a * left: Tree<'a> * right: Tree<'a>
 
- - apply
- - comp
- - lazyseq
- - referential transparency
- - recursion (Tail Optimized)
- - Work on collections
- - Boundaries on Functions.
+let traverse (tree : Tree<'a>) =
+  let rec loop (tree : Tree<'a>) = seq {
+    match tree with
+    | Empty -> ()
+    | Node (value, left, right) ->
+      yield value
 
- - Javas focus on single collections. Suppliers and Consumers.
+      yield! loop left
+      yield! loop right
+  }
+  
+  loop tree
 
-https://theburningmonk.com/2016/12/depth-first-tree-traversal-in-f/
+let tree = 
+  Node (1, 
+    Node (2, 
+      Node (4, Empty, Empty), 
+      Node (5, Empty, Empty)), 
+    Node (3, 
+      Node (6, 
+        Node (7, Empty, Empty),
+        Empty), 
+      Node (8, Empty, Empty)))
+
+//       1
+//    /     \
+//   2       3
+//  / \     / \
+// 4   5   6   8
+//        /
+//       7
+traverse tree |> Seq.iter (printfn "%d") // 1 2 4 5 3 6 7 8
+```
+
+## Juxt
+
+juxt takes an argument list of functions and returns a new "juxtaposing" function that applies each original function to the same set of arguments. All results are then collected in a vector. juxt could be described as a "function multiplexer" since it calls multiple functions to return multiple result. 
+
+```clojure
+((juxt first second last) (range 10))
+
+;; [0 1 9]
+```
+
+![JuxtCell](juxtcell.png)
+
+### Clojure
+
+```clojure
+(def dim #{0 1 2 3 4})
+
+(defn up    [[x y]] [x (dec y)])
+(defn down  [[x y]] [x (inc y)])
+
+(defn valid? [[x y]]
+  (and (dim x) (dim y)))
+
+(defn neighbors [cell] 
+  (filter valid? 
+    ((juxt up down left right) cell)))
+
+(neighbors [2 1])
+;; ([2 0] [2 2] [1 1] [3 1])
+
+(neighbors [0 0])
+;; ([0 1] [1 0])
+```
+
+## Memoize
+
+memoize generates a function that stores the results of an existing one using the argument values as key.
+
+trading space for time
+
+```clojure                                     
+(defn- f* [a b] 
+  (println (format "Cache miss for [%s %s]" a b))
+  (+ a b))
+
+(def f (memoize f*))
+
+(f 1 2)
+;; Cache miss for [1 2] 
+;; 3
+
+(f 1 2)
+;; 3
+
+(f 1 3)
+;; Cache miss for [1 3] 
+;; 4
+```
+
+#### Larger Example Spell Check Suggestions 
+
+```
+"Elapsed time: 906.899211 msecs"
+=> (["achieve" 1] ["active" 1] ["ache" 2])
+"Elapsed time: 0.744617 msecs"
+=> (["achieve" 1] ["active" 1] ["ache" 2])
+```
+
+## Simplex
+
+![Optimization](optimization.png)
+
+```
+Max Simple 2 Variable - Drugs and Machines
+==========================================
+
+A company produces drugs A and B using machines M 1 and M 2.
+- 1 ton of drug A requires 1 hour of processing on M1 and 2 hours on M2
+- 1 ton of drug B requires 3 hours of processing on M1 and 1 hour on M2
+- 9 hours of processing on M1 and 8 hours on M2 are available each day
+- Each ton of drug produced (of either type) yields £1 million profit
+
+x 1 = number of tons of A produced
+x 2 = number of tons of B produced
+
+Maximise:
+x1 + x2 (profit in £ million)
+
+Subject To:
+x1 + 3x2 <= 9 (M1 processing)
+2x1 + x2 <= 8 (M2 processing)
+x1, x2 > 0
+``` 
+

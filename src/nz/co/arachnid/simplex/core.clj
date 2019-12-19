@@ -24,10 +24,8 @@
 
 ;; Max z: 12x1 + 16x2 + 0s1 + 0s2 so: 12, 16, 0, 0
 ;; All co-effecients from the slack variable form of the objective or constraint functions.
-(s/def ::coefficient nat-int?)
 ;; Max z: 12x1 + 16x2 + 0s1 + 0s2 so: x1, x2, s1, s2
 ;; The variables from the slack variable form of the objective or constraint function.
-(s/def ::variables   symbol?)
 
 ;; Zj Row
 ;; ======
@@ -56,7 +54,9 @@
 
 (defn- mult-coeffecients-by-scalar
   [n vec-coeffecients]
-  (map (fn [elem] (* n elem)) vec-coeffecients))
+  (map
+    (fn [elem] (* n elem))
+    vec-coeffecients))
 
 ;; Helper Functions Public
 ;; =======================
@@ -69,7 +69,8 @@
                         tableaux-rows)]
     (str/join ", " (sort
                      (map
-                       (fn [pair] (str (name (first pair)) " = " (second pair)))
+                       (fn [pair]
+                         (str (name (first pair)) " = " (second pair)))
                        var-to-sol)))))
 
 (defn calculate-entering-row

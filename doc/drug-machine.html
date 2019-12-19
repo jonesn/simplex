@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sample Simplex</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body class="bg-light">
+    <div class="container">
+        
+        <h2>Iteration: 0</h2>
+            <table class="table table-striped table-sm">
+                <tr>
+                    <td rowspan="2"><b>CBi</b></td><td><b>Cj</b></td>
+                    
+                      <td>1</td>
+                    
+                      <td>1</td>
+                    
+                      <td>0</td>
+                    
+                      <td>0</td>
+                    
+                    <td rowspan="2"><b>Solution</b></td><td rowspan="2"><b>Ratio</b></td>
+                </tr>
+                <tr>
+                    <td><b>Basic Variable</b></td>
+                    
+                    <td>:x1</td>
+                    
+                    <td>:x2</td>
+                    
+                    <td>:s1</td>
+                    
+                    <td>:s2</td>
+                    
+                </tr>
+                
+                <tr>
+                    <td>0</td>
+                    <td>:s1</td>
+                    
+                      <td>1</td>
+                    
+                      <td>3</td>
+                    
+                      <td>1</td>
+                    
+                      <td>0</td>
+                    
+                    <td>9</td>
+                    <td>0</td>
+                </tr>
+                
+                <tr>
+                    <td>0</td>
+                    <td>:s2</td>
+                    
+                      <td>2</td>
+                    
+                      <td>1</td>
+                    
+                      <td>0</td>
+                    
+                      <td>1</td>
+                    
+                    <td>8</td>
+                    <td>0</td>
+                </tr>
+                
+                <tr>
+                    <td colspan="2"><b>Zj</b></td>
+                    
+                </tr>
+                <tr>
+                    <td colspan="2"><b>Cj - Zj</b></td>
+                    
+                </tr>
+            </table>
+        <h4>Key Data</h4>
+        <table class="table table-striped table-sm">
+            <tr><td><b>Key Column Index</b></td><td></td></tr>
+            <tr><td><b>Key Element</b></td><td></td></tr>
+            <tr><td><b>Key Ratio Index</b></td><td></td></tr>
+            <tr><td><b>Key Row Index</b></td><td></td></tr>
+            <tr><td><b>Entering Variable</b></td><td></td></tr>
+            <tr><td><b>Exiting Variable</b></td><td></td></tr>
+        </table>
+        <hr/>
+        
+        <h2>Iteration: 1</h2>
+            <table class="table table-striped table-sm">
+                <tr>
+                    <td rowspan="2"><b>CBi</b></td><td><b>Cj</b></td>
+                    
+                      <td>1</td>
+                    
+                      <td>1</td>
+                    
+                      <td>0</td>
+                    
+                      <td>0</td>
+                    
+                    <td rowspan="2"><b>Solution</b></td><td rowspan="2"><b>Ratio</b></td>
+                </tr>
+                <tr>
+                    <td><b>Basic Variable</b></td>
+                    
+                    <td>:x1</td>
+                    
+                    <td>:x2</td>
+                    
+                    <td>:s1</td>
+                    
+                    <td>:s2</td>
+                    
+                </tr>
+                
+                <tr>
+                    <td>0</td>
+                    <td>:s1</td>
+                    
+                      <td>0</td>
+                    
+                      <td>5/2</td>
+                    
+                      <td>1</td>
+                    
+                      <td>-1/2</td>
+                    
+                    <td>5</td>
+                    <td>9</td>
+                </tr>
+                
+                <tr>
+                    <td>1</td>
+                    <td>:x1</td>
+                    
+                      <td>1</td>
+                    
+                      <td>1/2</td>
+                    
+                      <td>0</td>
+                    
+                      <td>1/2</td>
+                    
+                    <td>4</td>
+                    <td>1</td>
+                </tr>
+                
+                <tr>
+                    <td colspan="2"><b>Zj</b></td>
+                    
+                      <td>0</td>
+                    
+                      <td>0</td>
+                    
+                      <td>0</td>
+                    
+                      <td>0</td>
+                    
+                </tr>
+                <tr>
+                    <td colspan="2"><b>Cj - Zj</b></td>
+                    
+                      <td>1</td>
+                    
+                      <td>1</td>
+                    
+                      <td>0</td>
+                    
+                      <td>0</td>
+                    
+                </tr>
+            </table>
+        <h4>Key Data</h4>
+        <table class="table table-striped table-sm">
+            <tr><td><b>Key Column Index</b></td><td>0</td></tr>
+            <tr><td><b>Key Element</b></td><td>2</td></tr>
+            <tr><td><b>Key Ratio Index</b></td><td>1</td></tr>
+            <tr><td><b>Key Row Index</b></td><td>1</td></tr>
+            <tr><td><b>Entering Variable</b></td><td>:x1</td></tr>
+            <tr><td><b>Exiting Variable</b></td><td>:s2</td></tr>
+        </table>
+        <hr/>
+        
+        <h2>Iteration: 2</h2>
+            <table class="table table-striped table-sm">
+                <tr>
+                    <td rowspan="2"><b>CBi</b></td><td><b>Cj</b></td>
+                    
+                      <td>1</td>
+                    
+                      <td>1</td>
+                    
+                      <td>0</td>
+                    
+                      <td>0</td>
+                    
+                    <td rowspan="2"><b>Solution</b></td><td rowspan="2"><b>Ratio</b></td>
+                </tr>
+                <tr>
+                    <td><b>Basic Variable</b></td>
+                    
+                    <td>:x1</td>
+                    
+                    <td>:x2</td>
+                    
+                    <td>:s1</td>
+                    
+                    <td>:s2</td>
+                    
+                </tr>
+                
+                <tr>
+                    <td>1</td>
+                    <td>:x2</td>
+                    
+                      <td>0</td>
+                    
+                      <td>1</td>
+                    
+                      <td>2/5</td>
+                    
+                      <td>-1/5</td>
+                    
+                    <td>2</td>
+                    <td>1</td>
+                </tr>
+                
+                <tr>
+                    <td>1</td>
+                    <td>:x1</td>
+                    
+                      <td>1</td>
+                    
+                      <td>0</td>
+                    
+                      <td>-1/5</td>
+                    
+                      <td>3/5</td>
+                    
+                    <td>3</td>
+                    <td>8</td>
+                </tr>
+                
+                <tr>
+                    <td colspan="2"><b>Zj</b></td>
+                    
+                      <td>1</td>
+                    
+                      <td>1/2</td>
+                    
+                      <td>0</td>
+                    
+                      <td>1/2</td>
+                    
+                </tr>
+                <tr>
+                    <td colspan="2"><b>Cj - Zj</b></td>
+                    
+                      <td>0</td>
+                    
+                      <td>1/2</td>
+                    
+                      <td>0</td>
+                    
+                      <td>-1/2</td>
+                    
+                </tr>
+            </table>
+        <h4>Key Data</h4>
+        <table class="table table-striped table-sm">
+            <tr><td><b>Key Column Index</b></td><td>1</td></tr>
+            <tr><td><b>Key Element</b></td><td>5/2</td></tr>
+            <tr><td><b>Key Ratio Index</b></td><td>0</td></tr>
+            <tr><td><b>Key Row Index</b></td><td>0</td></tr>
+            <tr><td><b>Entering Variable</b></td><td>:x2</td></tr>
+            <tr><td><b>Exiting Variable</b></td><td>:s1</td></tr>
+        </table>
+        <hr/>
+        
+    </div>
+</body>
+</html>

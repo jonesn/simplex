@@ -1,6 +1,7 @@
 (ns nz.co.arachnid.simplex.simplex-various-test
-  (:require [midje.sweet :refer :all])
-  (:require [nz.co.arachnid.simplex.core :refer :all]))
+  (:require [midje.sweet :refer :all]
+            [nz.co.arachnid.simplex.core :refer :all]
+            [nz.co.arachnid.simplex.tableaux-printer :refer :all]))
 
 ;; =================================================================================
 ;; This namespace allows for the collection of adhoc tests for use for verification
@@ -37,3 +38,6 @@
 (facts "Drugs Machine Solution To String"
        (fact "Full Simplex Solution can generate correct short form String"
              (tableaux-solution-to-string (last (simplex max-iteration-pre-drugs-machines))) => "x1 = 3, x2 = 2"))
+
+;; To print the solution
+(print-results (simplex max-iteration-pre-drugs-machines) "/tmp/drug-machine.html")
