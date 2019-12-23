@@ -27,7 +27,7 @@
    :basic-variable-row        [:x1 :x2 :s1 :s2]
    :objective-coeffecient-row [12 16 0 0] ;; cj from video
    :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [10 20 1 0] :solution 120 :ratio 0}
-                               {:cbi 0 :active-variable :s2 :constraint-coefficients [8 8 0 1]   :solution  80 :ratio 0}]})
+                               {:cbi 0 :active-variable :s2 :constraint-coefficients [8 8 0 1]   :solution 80 :ratio 0}]})
 
 (def max-iteration-0-post
   {:problem-type              :max
@@ -36,8 +36,8 @@
    :objective-coeffecient-row [12 16 0 0]
    :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [10 20 1 0], :solution 120, :ratio 6}
                                {:cbi 0 :active-variable :s2 :constraint-coefficients [8 8 0 1],   :solution 80,  :ratio 10}]
-   :Cj-Zj                     [12 16 0 0]
-   :Zj-row                    [0 0 0 0]
+   :cj-zj-row                 [12 16 0 0]
+   :zj-row                    [0 0 0 0]
    :key-column-index          1
    :key-element               20
    :key-ratio-index           0
@@ -52,8 +52,8 @@
    :objective-coeffecient-row [12 16 0 0]
    :tableaux-rows             [{:cbi 16, :active-variable :x2, :constraint-coefficients [1/2 1 1/20 0], :solution  6, :ratio 1}
                                {:cbi  0, :active-variable :s2, :constraint-coefficients [  4 0 -2/5 1], :solution 32, :ratio 10}]
-   :Cj-Zj                     [12 16 0 0]
-   :Zj-row                    [0 0 0 0]
+   :cj-zj-row                 [12 16 0 0]
+   :zj-row                    [0 0 0 0]
    :key-column-index          1
    :key-element               20
    :key-ratio-index           0
@@ -62,20 +62,20 @@
    :exiting-variable          :s1})
 
 (def max-solution
-  {:problem-type :max,
-   :iteration 2,
-   :basic-variable-row [:x1 :x2 :s1 :s2],
+  {:problem-type              :max,
+   :iteration                 2,
+   :basic-variable-row        [:x1 :x2 :s1 :s2],
    :objective-coeffecient-row [12 16 0 0],
-   :tableaux-rows [{:cbi 16, :active-variable :x2, :constraint-coefficients [0N 1N 1/10 -1/8], :solution 2N, :ratio 12N}
-                   {:cbi 12, :active-variable :x1, :constraint-coefficients [1 0 -1/10 1/4], :solution 8, :ratio 1}],
-   :Zj-row [8N 16 4/5 0]
-   :Cj-Zj [4N 0 -4/5 0],
-   :key-column-index 0,
-   :key-element 4,
-   :key-ratio-index 1,
-   :key-row-index 1,
-   :entering-variable :x1,
-   :exiting-variable :s2})
+   :tableaux-rows             [{:cbi 16, :active-variable :x2, :constraint-coefficients [0N 1N 1/10 -1/8], :solution 2N, :ratio 12N}
+                               {:cbi 12, :active-variable :x1, :constraint-coefficients [1 0 -1/10 1/4], :solution 8, :ratio 1}],
+   :zj-row                    [8N 16 4/5 0]
+   :cj-zj-row                 [4N 0 -4/5 0],
+   :key-column-index          0,
+   :key-element               4,
+   :key-ratio-index           1,
+   :key-row-index             1,
+   :entering-variable         :x1,
+   :exiting-variable          :s2})
 
 ;; ======================
 ;; Min Problem Iterations
@@ -93,16 +93,16 @@
 
 (facts "Calculate ZJ Row Cases"
        (fact "Max: Given Iteration 0 we will correctly calculate a zero Zj row"
-             (:Zj-row (calculate-zj-row max-iteration-0-pre)) => [0 0 0 0])
+             (:zj-row (calculate-zj-row max-iteration-0-pre)) => [0 0 0 0])
        (fact "Min: Given Iteration 0 we will correctly calculate a zero Zj row"
-             (:Zj-row (calculate-zj-row min-iteration-0-pre)) => [0 0 0 0 0]))
+             (:zj-row (calculate-zj-row min-iteration-0-pre)) => [0 0 0 0 0]))
 
 (facts "Calculate Cj - Zj"
        (let [undertest (comp calculate-cj-zj-row calculate-zj-row)]
          (fact "Max: Given iteration 0 we will correctly calculate the Cj-Zj row"
-               (:Cj-Zj (undertest max-iteration-0-pre)) => [12 16 0 0])
+               (:cj-zj-row (undertest max-iteration-0-pre)) => [12 16 0 0])
          (fact "Min: Given iteration 0 we will correctly calculate the Cj-Zj row"
-               (:Cj-Zj (undertest min-iteration-0-pre)) => [0.2 2 0 0 0])))
+               (:cj-zj-row (undertest min-iteration-0-pre)) => [0.2 2 0 0 0])))
 
 (facts "Check Optimality"
        (let [undertest (comp optimal-solution? calculate-cj-zj-row calculate-zj-row)]

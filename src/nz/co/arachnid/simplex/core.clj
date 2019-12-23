@@ -42,6 +42,46 @@
 ;; ====================
 ;; all Cj - Zj >= 0
 
+;; =====================================
+;;                Specs
+;; =====================================
+
+(s/check-asserts true)
+
+(s/def ::problem-type (hash-set :min :max))
+(s/def ::iteration    nat-int?)
+(s/def ::basic-variable-row (s/coll-of keyword? :kind vector? :distinct true :into []))
+(s/def ::objective-coeffecient-row (s/coll-of number? :kind vector? :into []))
+(s/def ::cbi number?)
+(s/def ::active-variable keyword?)
+(s/def ::constraint-coefficients (s/coll-of number? :kind vector? :into []))
+(s/def ::solution number?)
+(s/def ::ratio number?)
+(s/def ::zj-row (s/coll-of number? :kind vector? :into []))
+(s/def ::cj-zj-row (s/coll-of number? :kind vector? :into []))
+(s/def ::key-column-index nat-int?)
+(s/def ::key-element number?)
+(s/def ::key-ratio-index nat-int?)
+(s/def ::key-row-index nat-int?)
+(s/def ::entering-variable keyword?)
+(s/def ::exiting-variable keyword?)
+
+(s/def ::tableaux-row (s/keys :req-un [::cbi ::active-variable ::constraint-coefficients ::solution ::ratio]))
+(s/def ::tableaux-rows (s/coll-of ::tableaux-row :kind vector? :into []))
+(s/def ::tableaux (s/keys :req-un [::problem-type
+                                   ::iteration
+                                   ::basic-variable-row
+                                   ::objective-coeffecient-row
+                                   ::tableaux-rows]
+                          :opt-un [::zj-row
+                                   ::cj-zj-row
+                                   ::key-column-index
+                                   ::key-element
+                                   ::key-ratio-index
+                                   ::entering-variable
+                                   ::exiting-variable]))
+
+;; ========================
 ;; Helper Functions Private
 ;; ========================
 
@@ -58,6 +98,7 @@
     (fn [elem] (* n elem))
     vec-coeffecients))
 
+;; =======================
 ;; Helper Functions Public
 ;; =======================
 
@@ -135,6 +176,7 @@
           key-element))
       tableaux-rows)))
 
+;; ================
 ;;  Main Functions
 ;; ================
 
@@ -152,7 +194,7 @@
                            (fn [row] (mult-coeffecients-by-scalar (:cbi row) (:constraint-coefficients row)))
                            t-rows)
         zj               (apply mapv + cbi*constraints)]
-    (assoc tableaux :Zj-row zj)))
+    (assoc tableaux :zj-row zj)))
 
 
 (defn calculate-cj-zj-row
@@ -163,10 +205,10 @@
    ## New Keys
    - :Cj-Zj"
   [tableaux]
-  (let [zj-row   (:Zj-row tableaux)
+  (let [zj-row   (:zj-row tableaux)
         cj-row   (:objective-coeffecient-row tableaux)
         calc-row (mapv - cj-row zj-row)]
-    (merge tableaux {:Cj-Zj calc-row})))
+    (merge tableaux {:cj-zj-row calc-row})))
 
 
 (defn optimal-solution?
@@ -174,7 +216,7 @@
    - For min problems all Cj-Zj >= 0"
   [tableaux]
   (true?
-    (when-let [cj-zj-row (:Cj-Zj tableaux)]
+    (when-let [cj-zj-row (:cj-zj-row tableaux)]
       (or
         (and (= (:problem-type tableaux) :min) (every? (fn [x] (>= x 0)) cj-zj-row))
         (and (= (:problem-type tableaux) :max) (every? (fn [x] (<= x 0)) cj-zj-row))))))
@@ -191,7 +233,7 @@
 
 (defn- find-key-column-value
   [tableaux]
-  (find-key-value tableaux (:Cj-Zj tableaux) min max))
+  (find-key-value tableaux (:cj-zj-row tableaux) min max))
 
 
 (defn calculate-key-column
@@ -200,7 +242,7 @@
    ## New Keys:
    - :key-column-index"
   [tableaux]
-  (let [cj-zj-row     (:Cj-Zj tableaux)
+  (let [cj-zj-row     (:cj-zj-row tableaux)
         key-value     (find-key-column-value tableaux)
         column-index  (first (positions #{key-value} cj-zj-row))]
     (assoc tableaux :key-column-index column-index)))
@@ -300,7 +342,8 @@
    ## Returns
    A vector containing each Tableaux iteration"
   ([tableaux]
-   (simplex tableaux [tableaux]))
+   (let [validated-tableaux (s/assert ::tableaux tableaux)]
+     (simplex validated-tableaux [validated-tableaux])))
   ([tableaux iterations]
    (let [optimality-fn     (fn [t]
                              (->> t
@@ -317,7 +360,7 @@
        ;; then
        iterations
        ;; else
-       (let [next-iteration     (full-iteration-fn tableaux)
+       (let [next-iteration     (s/assert ::tableaux (full-iteration-fn tableaux))
              updated-iterations (conj iterations next-iteration)]
          (simplex next-iteration updated-iterations))))))
 

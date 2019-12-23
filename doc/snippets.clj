@@ -3,6 +3,7 @@
    (:require [nz.co.arachnid.simplex.tableaux-printer :as t]
              [clojure.walk :as w]))
 
+
 (def add   (fn [x y] (+ x y)))
 (def times (fn [x y] (* x y)))
 
@@ -78,3 +79,16 @@
 (def dict-ac (dict "ac"))
 
 (time (best "achive" dict-ac))
+
+;; =========
+;; Lazy Seqs
+;; =========
+
+(defn fib
+  ([]
+   (fib 1 1))
+  ([a b]
+   (lazy-seq (cons a (fib b (+ a b))))))
+
+
+
