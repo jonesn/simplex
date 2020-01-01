@@ -98,11 +98,21 @@
     (fn [elem] (* n elem))
     vec-coeffecients))
 
+(defn- transpose
+  "Takes a vector of equal length vectors and produces its transpose.
+   Example:
+   ========
+   (transpose [[1 2] [3 4]]) => [[1 3] [2 4]]"
+  [m]
+  (apply mapv vector m))
+
 ;; =======================
 ;; Helper Functions Public
 ;; =======================
 
 (defn tableaux-solution-to-string
+  "Function takes an entire solved tableaux and returns the solved variables in the form:
+   x1 = 8, x2 = 2"
   [tableaux]
   (let [tableaux-rows (:tableaux-rows tableaux)
         var-to-sol    (map
@@ -114,6 +124,48 @@
                          (str (name (first pair)) " = " (second pair)))
                        var-to-sol)))))
 
+
+(defn calculate-obj-cons-transpose-for-dual-form
+  "Constructs the transpose matrix for the dual form of the given Tableaux. Returns a nested vector of the form:
+   ```clojure
+   [[1 7 14]
+    [2 6 20]
+    [4 20 1]]
+   ```
+   For full details of the dual form see: [[construct-dual-form-of-tableaux]]"
+  [tableaux]
+  (let [tableaux-rows               (:tableaux-rows tableaux)
+        all-constraint-coeffecients (mapv :constraint-coefficients tableaux-rows)
+        ;; Count the number of non slack variables
+        number-of-non-slack-vars    (count
+                                      (filter
+                                        (fn [b-var]
+                                          (not (str/starts-with? (name b-var) "s")))
+                                        (:basic-variable-row tableaux)))
+        objective-coeffecients-sol  (conj
+                                      (vec (take number-of-non-slack-vars (:objective-coeffecient-row tableaux)))
+                                      1)
+        ;; We only want to transpose non slack coeffecients
+        constraint-coeffecients     (mapv
+                                      (fn [constraints] (vec (take number-of-non-slack-vars constraints)))
+                                      all-constraint-coeffecients)
+        constraint-solutions        (mapv :solution tableaux-rows)
+        constraint-coeff-and-sols   (mapv
+                                      (fn [constraints solution] (conj constraints solution))
+                                      constraint-coeffecients
+                                      constraint-solutions)]
+    (transpose
+      (conj constraint-coeff-and-sols objective-coeffecients-sol))))
+
+
+(defn replace-with-dual-coeff
+  "Replaces the head, defined by number of variables, of the old vector with that of the new."
+  [old new number-of-variables]
+  (vec
+    (concat (butlast new)
+            (nthrest old number-of-variables))))
+
+
 (defn calculate-entering-row
   [old-row key-element]
   (let [constraint-coefficients (:constraint-coefficients old-row)
@@ -123,11 +175,13 @@
                     :solution                new-solution
                     :ratio                   1})))
 
+
 (defn calculate-non-entering-value
   [old-val corresponding-key-col-val corresponding-key-row-val key-element]
   (- old-val
      (/ (* corresponding-key-col-val corresponding-key-row-val)
         key-element)))
+
 
 (defn calculate-non-entering-row
   [tableaux-row
@@ -307,6 +361,7 @@
     (merge tableaux {:entering-variable entering-variable
                      :exiting-variable  exiting-variable})))
 
+
 (defn setup-next-iteration
   "This function will setup the next iteration of the Tableaux. It is the most computationally
    expensive step as it updates all the rows in the tableaux with new values based on the:
@@ -335,6 +390,56 @@
                                      key-element)]
        (merge tableaux {:tableaux-rows updated-all-rows
                         :iteration     (inc (:iteration tableaux))})))
+
+
+(defn construct-dual-form-of-tableaux
+  "To solve minimization problems using Simplex we can reframe the initial problem as
+   a maximisation problem. This is achieved by taking the dual form which involves
+   taking the transpose of the constraints and objective functions.
+   Example:
+   ========
+   Minimise: 14s + 20t = C
+   Subject to:
+             s + 2t  >= 4
+             7s + 6t >= 20
+
+   Appending the objective function (c = 1) as the last row gives the Matrix:
+   [ 1  2  4
+     7  6 20
+    14 20  1]
+
+   Equivalent Dual Form Maximisation Problem:
+   ==========================================
+
+   Maximise: 4x + 20y = P
+   Subject To:
+             x + 7y <= 14
+            2x + 6y <= 20
+
+   [1  7 14
+    2  6 20
+    4 20  1]
+   "
+  [tableaux]
+  (let [transpose-for-dual-form    (calculate-obj-cons-transpose-for-dual-form tableaux)
+        tableaux-rows              (:tableaux-rows tableaux)
+        objective-row              (:objective-coeffecient-row tableaux)
+        dual-form-constraint-vec   (butlast transpose-for-dual-form)
+        dual-form-objective-vec    (last transpose-for-dual-form)
+        number-of-variables        (count (butlast dual-form-objective-vec))
+        updated-objective-row      (replace-with-dual-coeff objective-row dual-form-objective-vec number-of-variables)
+        updated-tableaux-rows      (mapv (fn [t-row dual-form-vec]
+                                           (let [constraint-coefficients         (:constraint-coefficients t-row)
+                                                 updated-constraint-coefficients (replace-with-dual-coeff constraint-coefficients dual-form-vec number-of-variables)
+                                                 updated-solution                (last dual-form-vec)]
+                                             (merge t-row {:constraint-coefficients updated-constraint-coefficients
+                                                           :solution                updated-solution})))
+                                         tableaux-rows
+                                         dual-form-constraint-vec)]
+    (merge tableaux {:problem-type              :max
+                     :objective-coeffecient-row updated-objective-row
+                     :tableaux-rows             updated-tableaux-rows})))
+
 
 (defn simplex
   "Recursive implementation that runs the full simplex algorithm for a valid initial Tableaux.
@@ -419,6 +524,14 @@
             :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [ 80  640 1 0 0] :solution  480 :ratio 0}
                                         {:cbi 0 :active-variable :s2 :constraint-coefficients [  6   36 0 1 0] :solution   30 :ratio 0}
                                         {:cbi 0 :active-variable :s3 :constraint-coefficients [600 1400 0 0 1] :solution 1600 :ratio 0}]})
+         (def dual-form-iteration-0-pre
+           {:problem-type              :min
+            :iteration                 0
+            :basic-variable-row        [:x1 :y1 :s1 :s2]
+            :objective-coeffecient-row [14 20 0 0] ;; cj from video
+            :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [1 2 1 0] :solution  4 :ratio 0}
+                                        {:cbi 0 :active-variable :s2 :constraint-coefficients [7 6 0 1] :solution 20 :ratio 0}]})
+         (construct-dual-form-of-tableaux dual-form-iteration-0-pre)
          (simplex it0)
          (last (simplex it0))
          (print-results (simplex it0) "/tmp/simplex-output.html")

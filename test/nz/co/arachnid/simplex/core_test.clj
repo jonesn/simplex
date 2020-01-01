@@ -189,7 +189,7 @@
                (calculate-entering-row input key-element) => {:cbi 16, :active-variable :x1, :constraint-coefficients [1/2 1 1/20 0], :solution 6, :ratio 1})))
 
 (facts "Calculate Non Entering Rows will update all non key rows ready for next iteration."
-       (fact "Given a well form vector of rows the function can correctly calculate new rows"
+       (fact "Given a well formed vector of rows the function can correctly calculate new rows"
              (let [previous-key-row {:cbi 0, :active-variable :s1 :constraint-coefficients [10 20 1 0], :solution 120, :ratio  6}
                    key-element      20
                    key-row-index    0
@@ -197,6 +197,34 @@
                                      {:cbi 0, :active-variable :s2, :constraint-coefficients [8 8 0 1], :solution 80, :ratio 10}]]
                (calculate-non-entering-rows input previous-key-row key-row-index 0 key-element) => [{:cbi 16, :active-variable :x1, :constraint-coefficients [1/2 1 1/20 0], :solution  6, :ratio 1}
                                                                                                     {:cbi  0, :active-variable :s2, :constraint-coefficients [  4 0 -2/5 1], :solution 32, :ratio 10}])))
+
+;; =================
+;; Dual Form Example
+;; =================
+
+(def dual-form-iteration-0-pre
+  {:problem-type              :min
+   :iteration                 0
+   :basic-variable-row        [:x1 :y1 :s1 :s2]
+   :objective-coeffecient-row [14 20 0 0] ;; cj from video
+   :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [1 2 1 0] :solution  4 :ratio 0}
+                               {:cbi 0 :active-variable :s2 :constraint-coefficients [7 6 0 1] :solution 20 :ratio 0}]})
+
+(def dual-form-iteration-0-post
+  {:problem-type              :max
+   :iteration                 0
+   :basic-variable-row        [:x1 :y1 :s1 :s2]
+   :objective-coeffecient-row [4 20 0 0] ;; cj from video
+   :tableaux-rows             [{:cbi 0 :active-variable :s1 :constraint-coefficients [1 7 1 0] :solution 14 :ratio 0}
+                               {:cbi 0 :active-variable :s2 :constraint-coefficients [2 6 0 1] :solution 20 :ratio 0}]})
+
+
+(facts "Calculate Dual Form Of Minimization Problem"
+       (fact "Dual form conversion is successful for minimisation problem of 2 variables"
+             (calculate-obj-cons-transpose-for-dual-form dual-form-iteration-0-pre) => [[1 7 14]
+                                                                                        [2 6 20]
+                                                                                        [4 20 1]]
+             (construct-dual-form-of-tableaux dual-form-iteration-0-pre) => dual-form-iteration-0-post))
 
 ;; ======================
 ;;     Zombie Cases
