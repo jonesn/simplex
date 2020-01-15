@@ -1,10 +1,8 @@
 # nz.co.arachnid.simplex
 
-A Clojure library designed to ... well, that part is up to you.
+Functional Simplex Implementation in Clojure
 
-## Usage
-
-FIXME
+ - Max cases implemented. Investigating dual form for min problems.
 
 ## License
 

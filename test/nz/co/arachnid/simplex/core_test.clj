@@ -91,6 +91,8 @@
                                {:cbi 0 :active-variable :s3 :constraint-coefficients [600 1400 0 0 1] :solution 1600 :ratio 0}]})
 
 
+
+
 (facts "Calculate ZJ Row Cases"
        (fact "Max: Given Iteration 0 we will correctly calculate a zero Zj row"
              (:zj-row (calculate-zj-row max-iteration-0-pre)) => [0 0 0 0])
@@ -220,11 +222,13 @@
 
 
 (facts "Calculate Dual Form Of Minimization Problem"
-       (fact "Dual form conversion is successful for minimisation problem of 2 variables"
+       (fact "Dual form conversion is successful for minimisation problem of 2 variables and 2 constraints."
              (calculate-obj-cons-transpose-for-dual-form dual-form-iteration-0-pre) => [[1 7 14]
                                                                                         [2 6 20]
                                                                                         [4 20 1]]
-             (construct-dual-form-of-tableaux dual-form-iteration-0-pre) => dual-form-iteration-0-post))
+             (construct-dual-form-of-tableaux dual-form-iteration-0-pre) => dual-form-iteration-0-post)
+       (fact "Dual form conversion is successful for minimisation problem of 2 variables and 3 constraints."
+             (construct-dual-form-of-tableaux min-iteration-0-pre) => dual-form-iteration-0-post))
 
 ;; ======================
 ;;     Zombie Cases
