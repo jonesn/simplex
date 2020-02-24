@@ -168,9 +168,10 @@
 
 (defn calculate-entering-row
   [old-row key-element]
-  (let [constraint-coefficients (:constraint-coefficients old-row)
-        new-coeffecients        (mapv (fn [x] (/ x key-element)) constraint-coefficients)
-        new-solution            (/ (:solution old-row) key-element)]
+  (let [safe-key-element-denomitator (if (= key-element 0) 1 key-element)
+        constraint-coefficients      (:constraint-coefficients old-row)
+        new-coeffecients             (mapv (fn [x] (/ x safe-key-element-denomitator)) constraint-coefficients)
+        new-solution                 (/ (:solution old-row) safe-key-element-denomitator)]
     (merge old-row {:constraint-coefficients new-coeffecients
                     :solution                new-solution
                     :ratio                   1})))
@@ -178,9 +179,10 @@
 
 (defn calculate-non-entering-value
   [old-val corresponding-key-col-val corresponding-key-row-val key-element]
-  (- old-val
-     (/ (* corresponding-key-col-val corresponding-key-row-val)
-        key-element)))
+  (let [safe-key-element-denominator (if (= key-element 0) 1 key-element)]
+    (- old-val
+       (/ (* corresponding-key-col-val corresponding-key-row-val)
+          safe-key-element-denominator))))
 
 
 (defn calculate-non-entering-row
@@ -315,7 +317,9 @@
                               (map :constraint-coefficients)
                               (mapv (fn [v] (nth v key-column-index))))
         ratios           (mapv
-                           (fn [x y] (/ x y))
+                           (fn [x y] (if (= 0 y)
+                                       x
+                                       (/ x y)))
                            solution-column
                            key-column)
         updated-tableaux-rows (mapv (fn [map val] (assoc map :ratio val)) tableaux-rows ratios)
@@ -411,6 +415,8 @@
    Equivalent Dual Form Maximisation Problem:
    ==========================================
 
+   Using different variables to highlight the change:
+
    Maximise: 4x + 20y = P
    Subject To:
              x + 7y <= 14
@@ -419,6 +425,11 @@
    [1  7 14
     2  6 20
     4 20  1]
+
+    Hence, optimal solution is arrived with value of variables as:
+     - x=2,y=1, Max Z=48
+    So given the duality:
+     - s=2,t=1, Min C=48
    "
   [tableaux]
   (let [transpose-for-dual-form    (calculate-obj-cons-transpose-for-dual-form tableaux)
@@ -440,6 +451,13 @@
                      :objective-coeffecient-row updated-objective-row
                      :tableaux-rows             updated-tableaux-rows})))
 
+(defn transform-to-standard-form
+  "Construct a standard form of the given Tableaux. This involves framing the
+   problem as a maximisation problem and having all constraints in <= form."
+  [tableaux]
+  (case (:problem-type tableaux)
+    :min (construct-dual-form-of-tableaux tableaux)
+    :max tableaux))
 
 (defn simplex
   "Recursive implementation that runs the full simplex algorithm for a valid initial Tableaux.
@@ -450,7 +468,8 @@
    (let [validated-tableaux (s/assert ::tableaux tableaux)]
      (simplex validated-tableaux [validated-tableaux])))
   ([tableaux iterations]
-   (let [optimality-fn     (fn [t]
+   (let [standard-form     (transform-to-standard-form tableaux)
+         optimality-fn     (fn [t]
                              (->> t
                                   calculate-zj-row
                                   calculate-cj-zj-row))
@@ -461,11 +480,11 @@
                                         calculate-key-row-and-value
                                         calculate-entering-and-exiting-variables
                                         setup-next-iteration))]
-     (if (optimal-solution? (optimality-fn tableaux))
+     (if (optimal-solution? (optimality-fn standard-form))
        ;; then
        iterations
        ;; else
-       (let [next-iteration     (s/assert ::tableaux (full-iteration-fn tableaux))
+       (let [next-iteration     (s/assert ::tableaux (full-iteration-fn standard-form))
              updated-iterations (conj iterations next-iteration)]
          (simplex next-iteration updated-iterations))))))
 

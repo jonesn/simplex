@@ -226,9 +226,7 @@
              (calculate-obj-cons-transpose-for-dual-form dual-form-iteration-0-pre) => [[1 7 14]
                                                                                         [2 6 20]
                                                                                         [4 20 1]]
-             (construct-dual-form-of-tableaux dual-form-iteration-0-pre) => dual-form-iteration-0-post)
-       (fact "Dual form conversion is successful for minimisation problem of 2 variables and 3 constraints."
-             (construct-dual-form-of-tableaux min-iteration-0-pre) => dual-form-iteration-0-post))
+             (construct-dual-form-of-tableaux dual-form-iteration-0-pre) => dual-form-iteration-0-post))
 
 ;; ======================
 ;;     Zombie Cases

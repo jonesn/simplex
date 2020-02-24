@@ -3,6 +3,13 @@
 Functional Simplex Implementation in Clojure
 
  - Max cases implemented. Investigating dual form for min problems.
+ 
+## Todo
+
+ - Create slack form of constraints. 
+   - See if insta parse can go back and forward from the grammar. It can't.
+   - Send through a list of strings, one per constraint and then work out the number of variables that would be needed.   
+   - Do for equalites and minimisation problems as well. 
 
 ## License
 
