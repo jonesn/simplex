@@ -138,22 +138,22 @@
         all-constraint-coeffecients (mapv :constraint-coefficients tableaux-rows)
         ;; Count the number of non slack variables
         number-of-non-slack-vars    (count
-                                      (filter
-                                        (fn [b-var]
-                                          (not (str/starts-with? (name b-var) "s")))
-                                        (:basic-variable-row tableaux)))
+                                     (filter
+                                      (fn [b-var]
+                                        (not (str/starts-with? (name b-var) "s")))
+                                      (:basic-variable-row tableaux)))
         objective-coeffecients-sol  (conj
-                                      (vec (take number-of-non-slack-vars (:objective-coeffecient-row tableaux)))
-                                      1)
+                                     (vec (take number-of-non-slack-vars (:objective-coeffecient-row tableaux)))
+                                     1)
         ;; We only want to transpose non slack coeffecients
         constraint-coeffecients     (mapv
-                                      (fn [constraints] (vec (take number-of-non-slack-vars constraints)))
-                                      all-constraint-coeffecients)
+                                     (fn [constraints] (vec (take number-of-non-slack-vars constraints)))
+                                     all-constraint-coeffecients)
         constraint-solutions        (mapv :solution tableaux-rows)
         constraint-coeff-and-sols   (mapv
-                                      (fn [constraints solution] (conj constraints solution))
-                                      constraint-coeffecients
-                                      constraint-solutions)]
+                                     (fn [constraints solution] (conj constraints solution))
+                                     constraint-coeffecients
+                                     constraint-solutions)]
     (transpose
       (conj constraint-coeff-and-sols objective-coeffecients-sol))))
 
@@ -310,21 +310,21 @@
    ## New Keys:
    - key-ratio-index"
   [tableaux]
-  (let [tableaux-rows    (:tableaux-rows tableaux)
-        solution-column  (map :solution tableaux-rows)
-        key-column-index (:key-column-index tableaux)
-        key-column       (->> (:tableaux-rows tableaux)
-                              (map :constraint-coefficients)
-                              (mapv (fn [v] (nth v key-column-index))))
-        ratios           (mapv
-                           (fn [x y] (if (= 0 y)
-                                       x
-                                       (/ x y)))
-                           solution-column
-                           key-column)
+  (let [tableaux-rows         (:tableaux-rows tableaux)
+        solution-column       (map :solution tableaux-rows)
+        key-column-index      (:key-column-index tableaux)
+        key-column            (->> (:tableaux-rows tableaux)
+                                   (map :constraint-coefficients)
+                                   (mapv (fn [v] (nth v key-column-index))))
+        ratios                (mapv
+                               (fn [x y] (if (= 0 y)
+                                           x
+                                           (/ x y)))
+                               solution-column
+                               key-column)
         updated-tableaux-rows (mapv (fn [map val] (assoc map :ratio val)) tableaux-rows ratios)
-        key-ratio-value (find-key-value tableaux ratios max min)
-        key-ratio-index (first (positions #{key-ratio-value} ratios))]
+        key-ratio-value       (find-key-value tableaux ratios max min)
+        key-ratio-index       (first (positions #{key-ratio-value} ratios))]
     (merge
       tableaux
       {:tableaux-rows   updated-tableaux-rows
@@ -451,6 +451,7 @@
                      :objective-coeffecient-row updated-objective-row
                      :tableaux-rows             updated-tableaux-rows})))
 
+
 (defn transform-to-standard-form
   "Construct a standard form of the given Tableaux. This involves framing the
    problem as a maximisation problem and having all constraints in <= form."
@@ -459,14 +460,17 @@
     :min (construct-dual-form-of-tableaux tableaux)
     :max tableaux))
 
+
 (defn simplex
   "Recursive implementation that runs the full simplex algorithm for a valid initial Tableaux.
    It will start by checking for optimality and if it is not meet will process another iteration.
    ## Returns
    A vector containing each Tableaux iteration"
+  ;; Arity 1
   ([tableaux]
    (let [validated-tableaux (s/assert ::tableaux tableaux)]
      (simplex validated-tableaux [validated-tableaux])))
+  ;; Arity 2
   ([tableaux iterations]
    (let [standard-form     (transform-to-standard-form tableaux)
          optimality-fn     (fn [t]

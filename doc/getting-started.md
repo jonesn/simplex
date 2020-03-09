@@ -1,6 +1,22 @@
-# Definition Of Slack Variables
+# Standard Form
 
-## Original Model
+ - Maximisation Problem
+ - All Constraints <=
+ - Non negative constraints on all variables.
+
+The key to the efficiency of the simplex algorithm is that it only needs to find a Corner Point Feasible (CPF) solution
+that has no adjacent CPF solutions that are better. Most of what simplex does is follow the edges towards the CPFs that
+maximize Z. 
+
+## Initial Table
+
+![wyndor1](images/wyndor_glass1.jpg)
+
+This is just a specific form of
+
+![wyndor2](images/wyndor_glass2.jpg)
+
+## Standard Form
 
 Maximize: 
 ```
@@ -18,6 +34,26 @@ And:
 ```
 x1 >= 0, x2 >= 0
 ```
+
+# Constraint Boundary
+
+ - Is a line that forms the boundary of what is permitted by the corresponding constraint.
+ 
+# Corner Point Solutions
+
+## Feasible
+
+ - Lie on the feasible region.
+
+## Infeasible
+
+ - Lie outside the feasible region.
+ 
+![wyndor3](images/wyndor_glass3.jpg)
+![wyndor4](images/wyndor_glass4.jpg)
+![wyndor5](images/wyndor_glass5.jpg) 
+
+# Definition Of Slack Variables
 
 ## Slack Variables
 
@@ -64,6 +100,8 @@ And
 ```
 xj >= 0, for j = 1,2,3,4,5
 ```
+
+![wyndor6](images/wyndor_glass6.jpg)
 
 The solution for this problem is:
 
