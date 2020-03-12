@@ -75,8 +75,8 @@
    ```
 
    ## Parameters
-   - The Hiccup Vector Representing the constraint. (See below)
-   - The slack variable name to be used in this form. I.e. s1, s2, s3
+   - hiccup-vector-of-constraint: The Hiccup Vector Representing the constraint. (See below)
+   - slack-variable: The slack variable name to be used in this form. I.e. s1, s2, s3
 
    ## Example Hiccup Content
    ```
@@ -108,6 +108,21 @@
                               updated-with-slack)]
     updated-with-equals))
 
+(defn str-constraints-to-hiccup-augmented-form
+  "## Description:
+   Transforms a vector of constraints in string form and converts them to hiccup augmented form.
+
+   ## Parameters:
+   - vector-of-string-constraints: Easiest to show with an example
+   ```
+   [\"6x1+9x2>=1000\" \"x1+x2>=100\"]
+   ```
+   "
+  [vector-of-string-constraints]
+  (mapv (fn [constraint-str slack-var] (slack-form-of-constraint (constraint-parser constraint-str) (str "s" slack-var)))
+       vector-of-string-constraints
+       (range 1 (inc (count vector-of-string-constraints)))))
+
 
 (defn instaparse-to-string
   [instaparse-form]
@@ -120,6 +135,7 @@
   (constraint-parser "x1+x2>=100")
   (clojure.pprint/pprint (constraint-parser "6x1+9x2>=1000"))
   (clojure.pprint/pprint (slack-form-of-constraint (constraint-parser "6x1+9x2>=1000") "s1"))
+  (clojure.pprint/pprint (str-constraints-to-hiccup-augmented-form ["6x1+9x2>=1000" "x1+x2>=100"]))
   (def full-constraint
     [:CONSTRAINT
      [:EXPRESSION
