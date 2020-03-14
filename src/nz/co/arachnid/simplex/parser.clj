@@ -56,39 +56,50 @@
        ;; Otherwise Continue Traversal.
        :else                                           (recur (zip/next hiccup-tree)))))
 
+(defmulti slack-form-of-constraint
+          "## Description
+           Creates a new hiccup representation of the given constraint in slack form.
+           A slack variable represents the amount of slack in the left hand side of an inequality.
+           As an example
+           ```
+           x1 <= 4
+           ```
+           The slack variable for this constraint is defined to be:
+           ```
+           x3 = 4 - x1
+           ```
+           Which is the amount of slack in the left hand of the inequality. Thus,
+           ```
+           x1 + x3 = 4
+           ```
 
-(defn slack-form-of-constraint
-  "## Description
-   Creates a new hiccup representation of the given constraint in slack form.
-   A slack variable represents the amount of slack in the left hand side of an inequality.
-   As an example
-   ```
-   x1 <= 4
-   ```
-   The slack variable for this constraint is defined to be:
-   ```
-   x3 = 4 - x1
-   ```
-   Which is the amount of slack in the left hand of the inequality. Thus,
-   ```
-   x1 + x3 = 4
-   ```
+           ## Parameters
+           - hiccup-vector-of-constraint: The Hiccup Vector Representing the constraint. (See below)
+           - slack-variable: The slack variable name to be used in this form. I.e. s1, s2, s3
 
-   ## Parameters
-   - hiccup-vector-of-constraint: The Hiccup Vector Representing the constraint. (See below)
-   - slack-variable: The slack variable name to be used in this form. I.e. s1, s2, s3
+           ## Example Hiccup Content
+           ```
+           [:CONSTRAINT
+             [:EXPRESSION
+              [:EXPRESSION [:VARIABLE \"6x1\"]]
+              [:OPERATOR \"+\"]
+              [:EXPRESSION [:VARIABLE \"9x2\"]]]
+             [:COMPARISON \">=\"]
+             [:RESULT \"1000\"]]
+           ```
+           "
+          (fn [hiccup-vector-of-constraint slack-variable]
+            (let [hiccup-tree-seq (tree-seq vector? identity hiccup-vector-of-constraint)
+                  comparison      (->> hiccup-tree-seq
+                                       (filter (pred-gen-vec-and-keyword :COMPARISON))
+                                       ;; Take the last comparison block (It should be the only one)
+                                       (last)
+                                       ;; Just dispatch on the string value of the operator I.e. >=, <=, =
+                                       (last))]
+              comparison)))
 
-   ## Example Hiccup Content
-   ```
-   [:CONSTRAINT
-     [:EXPRESSION
-      [:EXPRESSION [:VARIABLE \"6x1\"]]
-      [:OPERATOR \"+\"]
-      [:EXPRESSION [:VARIABLE \"9x2\"]]]
-     [:COMPARISON \">=\"]
-     [:RESULT \"1000\"]]
-   ```
-   "
+
+(defmethod slack-form-of-constraint ">="
   [hiccup-vector-of-constraint slack-variable]
   (let [hiccup-tree-seq     (tree-seq vector? identity hiccup-vector-of-constraint)
         expression          (->> hiccup-tree-seq
@@ -107,6 +118,7 @@
                               [:COMPARISON "="]
                               updated-with-slack)]
     updated-with-equals))
+
 
 (defn str-constraints-to-hiccup-augmented-form
   "## Description:
