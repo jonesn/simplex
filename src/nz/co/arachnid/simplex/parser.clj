@@ -56,6 +56,7 @@
        ;; Otherwise Continue Traversal.
        :else                                           (recur (zip/next hiccup-tree)))))
 
+
 (defmulti slack-form-of-constraint
           "## Description
            Creates a new hiccup representation of the given constraint in slack form.
