@@ -184,6 +184,10 @@
 ;;   Helper Function Tests
 ;; ======================
 
+;(facts "Calculate Key value Scenarios"
+;       (fact "Simple Case"
+;             (find-key-value max [12 16 0 0] [:x1 :x2 :s1 :s2] [:s1 :s2]) => 16))
+
 (facts "Calculate Entering Row should use the key element (ke) to create a ratio of old coeffecient over ke"
        (fact "Given a well formed row the function will correctly calculate the new ratios"
              (let [input       {:cbi 16, :active-variable :x1, :constraint-coefficients [10 20 1 0], :solution 120, :ratio 6}

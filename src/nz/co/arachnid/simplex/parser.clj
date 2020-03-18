@@ -137,9 +137,9 @@
        (range 1 (inc (count vector-of-string-constraints)))))
 
 
-(defn instaparse-to-string
-  [instaparse-form]
-  nil)
+(defn construct-tableaux-from-objectives-and-constraints
+  [objective vector-of-string-constraints])
+
 
 (comment
   (constraint-parser "x1 + x2 = 0")

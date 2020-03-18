@@ -6,10 +6,16 @@ Functional Simplex Implementation in Clojure
  
 ## Todo
 
- - Create slack form of constraints. 
-   - See if insta parse can go back and forward from the grammar. It can't.
-   - Send through a list of strings, one per constraint and then work out the number of variables that would be needed.   
-   - Do for equalites and minimisation problems as well. 
+ - Get the printer to write out the zj and cj rows.
+ - Tests for         
+ - Do for equalities and minimisation problems as well.
+  
+
+## Done
+
+ - Create slack form of constraints.
+ - See if insta parse can go back and forward from the grammar. It can't.
+ - Send through a list of strings, one per constraint and then work out the number of variables that would be needed.
 
 ## License
 

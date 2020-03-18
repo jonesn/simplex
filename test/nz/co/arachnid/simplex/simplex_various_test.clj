@@ -60,6 +60,7 @@
        (fact "Full Simplex Solution can generate correct short form String"
              (tableaux-solution-to-string (last (simplex max-iteration-pre-wyndor-glass))) => "x1 = 2, x2 = 6"))
 
+;; (print-results (simplex max-iteration-pre-wyndor-glass) "/tmp/wyndor.html")
 
 ;; Min Problem For Transpose Dual Form
 ;; ===================================

@@ -279,22 +279,15 @@
 
 
 (defn- find-key-value
-  [tableaux vec when-min-fn-a when-max-fn-b]
-  (let [problem-type (:problem-type tableaux)]
-    (cond
-      (= problem-type :min) (apply when-min-fn-a vec)
-      (= problem-type :max) (apply when-max-fn-b vec)
-      :else (throw (ex-info "Unknown Problem Type" {:problem-type problem-type})))))
-
+  [vec]
+  (apply max vec))
 
 (defn- find-key-column-value
   [tableaux]
-  (find-key-value tableaux (:cj-zj-row tableaux) min max))
-
+  (find-key-value (:cj-zj-row tableaux)))
 
 (defn calculate-key-column
   "- Fox max problems the key column is the cj-zj-row column containing the highest value.
-   - For min problems the key column is the cj-zj-row column containing the lowest value.
    ## New Keys:
    - :key-column-index"
   [tableaux]
@@ -323,7 +316,7 @@
                                solution-column
                                key-column)
         updated-tableaux-rows (mapv (fn [map val] (assoc map :ratio val)) tableaux-rows ratios)
-        key-ratio-value       (find-key-value tableaux ratios max min)
+        key-ratio-value       (apply min ratios)
         key-ratio-index       (first (positions #{key-ratio-value} ratios))]
     (merge
       tableaux
@@ -469,9 +462,9 @@
   ;; Arity 1
   ([tableaux]
    (let [validated-tableaux (s/assert ::tableaux tableaux)]
-     (simplex validated-tableaux [validated-tableaux])))
+     (simplex validated-tableaux [validated-tableaux] 20)))
   ;; Arity 2
-  ([tableaux iterations]
+  ([tableaux iterations max-iterations]
    (let [standard-form     (transform-to-standard-form tableaux)
          optimality-fn     (fn [t]
                              (->> t
@@ -484,13 +477,12 @@
                                         calculate-key-row-and-value
                                         calculate-entering-and-exiting-variables
                                         setup-next-iteration))]
-     (if (optimal-solution? (optimality-fn standard-form))
-       ;; then
-       iterations
-       ;; else
-       (let [next-iteration     (s/assert ::tableaux (full-iteration-fn standard-form))
-             updated-iterations (conj iterations next-iteration)]
-         (simplex next-iteration updated-iterations))))))
+     (cond (optimal-solution? (optimality-fn standard-form)) iterations
+           ;; concrete max iterations for now
+           (> (count iterations) max-iterations)             iterations
+           :default                                          (let [next-iteration     (s/assert ::tableaux (full-iteration-fn standard-form))
+                                                                   updated-iterations (conj iterations next-iteration)]
+                                                               (simplex next-iteration updated-iterations max-iterations))))))
 
 ;; ======================================
 ;;        Comment Helper Functions
