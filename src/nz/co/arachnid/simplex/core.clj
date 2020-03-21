@@ -118,11 +118,13 @@
         var-to-sol    (map
                         (fn [row] (vals (select-keys row [:active-variable :solution])))
                         tableaux-rows)]
-    (str/join ", " (sort
-                     (map
-                       (fn [pair]
-                         (str (name (first pair)) " = " (second pair)))
-                       var-to-sol)))))
+    (->> var-to-sol
+         ;; Filter out any variables the don't start with x
+         (filter (fn [pair] (str/starts-with? (name (first pair)) "x")))
+         ;; Form the String of form x1=3
+         (map    (fn [pair] (str (name (first pair)) " = " (second pair))))
+         (sort)
+         (str/join ", "))))
 
 
 (defn calculate-obj-cons-transpose-for-dual-form
@@ -314,8 +316,10 @@
 
 
 (defn calculate-solution-to-key-val-ratio
-  "- Take the solution (s) and key (k) columns and produce a new column of the ratios: s / k
+  "- Take the solution (s) and key (k) columns and produce a new column of the ratios: s / k. The minimum
+     of these ratios is selected to help us identify the leaving basic variable in subsequent steps.
    - The ratios in the Tableaux rows will be updated
+   - Only positive coefficients in the key column will be considered.
    ## New Keys:
    - key-ratio-index"
   [tableaux]
@@ -332,7 +336,7 @@
                                solution-column
                                key-column)
         updated-tableaux-rows (mapv (fn [map val] (assoc map :ratio val)) tableaux-rows ratios)
-        key-ratio-value       (apply min ratios)
+        key-ratio-value       (apply min (filter pos? ratios))
         key-ratio-index       (first (positions #{key-ratio-value} ratios))]
     (merge
       tableaux

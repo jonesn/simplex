@@ -56,7 +56,7 @@
                                {:cbi 0 :active-variable :s2 :constraint-coefficients [0 2 0 1 0] :solution 12 :ratio 0}
                                {:cbi 0 :active-variable :s3 :constraint-coefficients [3 2 0 0 1] :solution 18 :ratio 0}]})
 
-(future-fact "Wyndor Glass Solution To String"
+(fact "Wyndor Glass Solution To String"
        (fact "Full Simplex Solution can generate correct short form String"
              (tableaux-solution-to-string (last (simplex max-iteration-pre-wyndor-glass))) => "x1 = 2, x2 = 6"))
 
