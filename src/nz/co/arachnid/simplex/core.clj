@@ -278,13 +278,29 @@
         (and (= (:problem-type tableaux) :max) (every? (fn [x] (<= x 0)) cj-zj-row))))))
 
 
-(defn- find-key-value
-  [vec]
-  (apply max vec))
+(defn find-key-value
+  "The key value is the maximum value of the :cj-zj-row whose column in the
+   tableaux is not that of an active basic variable."
+  [selection-fn cj-zj-row basic-variables active-basic-variables]
+  (let [active-positions (positions (set active-basic-variables) basic-variables)
+        ;; Extract and name this function: remove-elements-at-index
+        non-active-cj-zj (filterv #(not (nil? %))
+                                  (map-indexed
+                                    (fn [index cj-zj-element]
+                                      (when (not (some #{index} active-positions))
+                                        cj-zj-element))
+                                    cj-zj-row))]
+    (apply selection-fn non-active-cj-zj)))
 
-(defn- find-key-column-value
+
+(defn find-key-column-value
   [tableaux]
-  (find-key-value (:cj-zj-row tableaux)))
+  (let [tableaux-rows         (:tableaux-rows tableaux)
+        basic-variables       (:basic-variable-row tableaux)
+        active-variables      (mapv :active-variable tableaux-rows)
+        cj-zj-row             (:cj-zj-row tableaux)]
+    (find-key-value max cj-zj-row basic-variables active-variables)))
+
 
 (defn calculate-key-column
   "- Fox max problems the key column is the cj-zj-row column containing the highest value.
