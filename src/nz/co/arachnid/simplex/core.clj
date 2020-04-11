@@ -169,6 +169,9 @@
 
 
 (defn calculate-entering-row
+  "- The entering row has all its current coefficients divided by the given key-element.
+   - The solution is also updated by dividing by the key element.
+   - The updated row is returned."
   [old-row key-element]
   (let [safe-key-element-denomitator (if (= key-element 0) 1 key-element)
         constraint-coefficients      (:constraint-coefficients old-row)
@@ -259,7 +262,7 @@
   "Cj - Zj Row
    ===========
    - Once the Zj row is calculated simply subtracts the Cj row from it.
-     The supplied tableaux is updated with the result
+     The supplied `tableaux` is updated with the result
    ## New Keys
    - :Cj-Zj"
   [tableaux]
@@ -362,7 +365,7 @@
 
 
 (defn calculate-entering-and-exiting-variables
-  "- Here we clearly extract the entering and exiting variables for the next iteration.
+  "- Here we extract the entering and exiting variables for the next iteration.
      The entering variable is variable in vector :basic-variables that indexed by :key-column-index.
      The exiting variable is the :active-variable indexed by :key-row-index
      ## New Keys:
@@ -386,27 +389,27 @@
     - :key-column
     - :key-element"
   [tableaux]
-  (let [key-element                (:key-element tableaux)
-        key-column-index           (:key-column-index tableaux)
-        key-row-index              (:key-row-index tableaux)
-        tableaux-rows              (:tableaux-rows tableaux)
-        entering-variable          (:entering-variable tableaux)
-        coeffecient-row            (:objective-coeffecient-row tableaux)
-        entering-coeffecient       (nth coeffecient-row key-column-index)
-        entering-row-to-update     (nth tableaux-rows key-row-index)
-        updated-entering-row-step1 (merge entering-row-to-update
-                                          {:active-variable entering-variable
-                                           :cbi             entering-coeffecient})
-        updated-entering-row-step2 (calculate-entering-row updated-entering-row-step1 key-element)
+  (let [key-element                             (:key-element tableaux)
+        key-column-index                        (:key-column-index tableaux)
+        key-row-index                           (:key-row-index tableaux)
+        tableaux-rows                           (:tableaux-rows tableaux)
+        entering-variable                       (:entering-variable tableaux)
+        coeffecient-row                         (:objective-coeffecient-row tableaux)
+        entering-coeffecient                    (nth coeffecient-row key-column-index)
+        entering-row-to-update                  (nth tableaux-rows key-row-index)
+        updated-entering-row-step1              (merge entering-row-to-update
+                                                       {:active-variable entering-variable
+                                                        :cbi             entering-coeffecient})
+        updated-entering-row-step2              (calculate-entering-row updated-entering-row-step1 key-element)
         updated-tableaux-rows-with-entering-row (assoc tableaux-rows key-row-index updated-entering-row-step2)
-        updated-all-rows           (calculate-non-entering-rows
-                                     updated-tableaux-rows-with-entering-row
-                                     entering-row-to-update
-                                     key-row-index
-                                     key-column-index
-                                     key-element)]
-       (merge tableaux {:tableaux-rows updated-all-rows
-                        :iteration     (inc (:iteration tableaux))})))
+        updated-all-rows                        (calculate-non-entering-rows
+                                                   updated-tableaux-rows-with-entering-row
+                                                   entering-row-to-update
+                                                   key-row-index
+                                                   key-column-index
+                                                   key-element)]
+    (merge tableaux {:tableaux-rows updated-all-rows
+                     :iteration     (inc (:iteration tableaux))})))
 
 
 (defn construct-dual-form-of-tableaux
